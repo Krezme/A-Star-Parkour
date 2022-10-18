@@ -5,9 +5,22 @@ using UnityEngine;
 namespace AStar{
     public class Grid : MonoBehaviour
     {
+
+        public static Grid instance;
+
+        //create a singleton
+        void Awake() {
+            if (instance != null) {
+                Debug.LogError("More than one Grid in scene!");
+            }else {
+                instance = this;
+            }
+        }
+
         public LayerMask unwalkableMask;
         public Vector2 gridWorldSize;
         public float nodeRadius;
+        public List<Node> path;
         Node[,] grid;
 
         float nodeDiameter;
@@ -29,9 +42,30 @@ namespace AStar{
                 for (int y = 0; y < gridSizeX; y++) {
                     Vector3 worldPoint = worldBottomLeft + Vector3.right * (x * nodeDiameter + nodeRadius) + Vector3.forward * (y * nodeDiameter + nodeRadius);
                     bool walkable = !(Physics.CheckSphere(worldPoint, nodeRadius, unwalkableMask));
-                    grid[x, y] = new Node(walkable, worldPoint);
+                    grid[x, y] = new Node(walkable, worldPoint, x, y);
                 }
             }
+        }
+
+        public List<Node> GetNeighbours(Node node) {
+            List<Node> neighbours = new List<Node>();
+
+            for (int x = -1; x <= 1; x++) {
+                for (int y = -1; y <= 1; y++) {
+                    if (x == 0 && y == 0) {
+                        continue;
+                    }
+
+                    int checkX = node.gridX + x;
+                    int checkY = node.gridY + y;
+
+                    if (checkX >= 0 && checkX < gridSizeX && checkY >= 0 && checkY < gridSizeY) {
+                        neighbours.Add(grid[checkX, checkY]);
+                    }
+                }
+            }
+
+            return neighbours;
         }
 
         public Node NodeFromWorldPoint (Vector3 worldPosition) {
@@ -51,6 +85,11 @@ namespace AStar{
             if (grid != null) {
                 foreach (Node n in grid) {
                     Gizmos.color = (n.walkable) ? Color.white : Color.red;
+                    if (path != null) {
+                        if (path.Contains(n)) {
+                            Gizmos.color = Color.black;
+                        }
+                    }
                     Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter - .1f));
                 }
             }
