@@ -34,6 +34,12 @@ namespace AStar{
             CreateGrid();
         }
 
+        public int MaxSize{
+            get{
+                return gridSizeX * gridSizeY;
+            }
+        }
+
         void CreateGrid() {
             grid = new Node[gridSizeX, gridSizeY];
             Vector3 worldBottomLeft = transform.position - Vector3.right * gridWorldSize.x / 2 - Vector3.forward * gridWorldSize.y / 2;
