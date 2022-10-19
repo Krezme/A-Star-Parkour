@@ -15,8 +15,14 @@ namespace AStar{
             }else {
                 instance = this;
             }
+
+            nodeDiameter = nodeRadius * 2;
+            gridSizeX = Mathf.RoundToInt(gridWorldSize.x / nodeDiameter);
+            gridSizeY = Mathf.RoundToInt(gridWorldSize.y / nodeDiameter);
+            CreateGrid();
         }
 
+        public bool displayGridGizmos;
         public LayerMask unwalkableMask;
         public Vector2 gridWorldSize;
         public float nodeRadius;
@@ -28,10 +34,10 @@ namespace AStar{
         int gridSizeY;
 
         void Start () {
-            nodeDiameter = nodeRadius * 2;
+            /* nodeDiameter = nodeRadius * 2;
             gridSizeX = Mathf.RoundToInt(gridWorldSize.x / nodeDiameter);
             gridSizeY = Mathf.RoundToInt(gridWorldSize.y / nodeDiameter);
-            CreateGrid();
+            CreateGrid(); */
         }
 
         public int MaxSize{
@@ -88,14 +94,10 @@ namespace AStar{
 
         void OnDrawGizmos() {
             Gizmos.DrawWireCube(transform.position, new Vector3(gridWorldSize.x, 1, gridWorldSize.y));
-            if (grid != null) {
+
+            if (grid != null && displayGridGizmos) {
                 foreach (Node n in grid) {
                     Gizmos.color = (n.walkable) ? Color.white : Color.red;
-                    if (path != null) {
-                        if (path.Contains(n)) {
-                            Gizmos.color = Color.black;
-                        }
-                    }
                     Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter - .1f));
                 }
             }
