@@ -19,6 +19,12 @@ namespace AStar{
             nodeDiameter = nodeRadius * 2;
             gridSizeX = Mathf.RoundToInt(gridWorldSize.x / nodeDiameter);
             gridSizeY = Mathf.RoundToInt(gridWorldSize.y / nodeDiameter);
+
+            foreach (TerrainType region in walkableRegions) {
+                walkableMask.value |= region.terrainMask.value; //bitwise OR operator
+                walkableRegionsDictionary.Add(Mathf.RoundToInt(Mathf.Log(region.terrainMask.value, 2)), region.terrainPenalty);
+            }
+
             CreateGrid();
         }
 
@@ -27,6 +33,9 @@ namespace AStar{
         public Vector2 gridWorldSize;
         public float nodeRadius;
         public List<Node> path;
+        public TerrainType[] walkableRegions;
+        LayerMask walkableMask;
+        Dictionary<int, int> walkableRegionsDictionary = new Dictionary<int, int>();
         Node[,] grid;
 
         float nodeDiameter;
@@ -54,7 +63,22 @@ namespace AStar{
                 for (int y = 0; y < gridSizeX; y++) {
                     Vector3 worldPoint = worldBottomLeft + Vector3.right * (x * nodeDiameter + nodeRadius) + Vector3.forward * (y * nodeDiameter + nodeRadius);
                     bool walkable = !(Physics.CheckSphere(worldPoint, nodeRadius, unwalkableMask));
-                    grid[x, y] = new Node(walkable, worldPoint, x, y);
+                    
+                    
+
+                    int movementPenalty = 0;
+
+                    //raycast
+
+                    if (walkable) {
+                        Ray ray = new Ray(worldPoint + Vector3.up * 50, Vector3.down);
+                        RaycastHit hit;
+                        if (Physics.Raycast(ray, out hit, 100, walkableMask)) {
+                            walkableRegionsDictionary.TryGetValue(hit.collider.gameObject.layer, out movementPenalty);
+                        }
+                    }
+
+                    grid[x, y] = new Node(walkable, worldPoint, x, y, movementPenalty);
                 }
             }
         }
@@ -101,6 +125,12 @@ namespace AStar{
                     Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter - .1f));
                 }
             }
+        }
+    	
+        [System.Serializable]
+        public class TerrainType {
+            public LayerMask terrainMask;
+            public int terrainPenalty;
         }
     }
 }
