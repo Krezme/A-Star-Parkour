@@ -8,28 +8,28 @@ namespace AStar {
     {
         public static Pathfinding instance;
 
+        Grid grid;
+
         void Awake() {
             if (instance != null) {
                 Debug.LogError("More than one Pathfinding in scene!");
             }else {
                 instance = this;
             }
+
+            grid = GetComponent<Grid>();
         }
 
         void Update () {
 
         }
 
-        public void StartFindPath(Vector3 startPos, Vector3 targetPos) {
-            StartCoroutine(FindPath(startPos, targetPos));
-        }
-
-        public IEnumerator FindPath (Vector3 startPos, Vector3 targetPos) {
+        public void FindPath (PathRequest request, Action<PathResult> callback) {
             Vector3[] waypoints = new Vector3[0];
             bool pathSuccess = false;
 
-            Node startNode = Grid.instance.NodeFromWorldPoint(startPos);
-            Node targetNode = Grid.instance.NodeFromWorldPoint(targetPos);
+            Node startNode = Grid.instance.NodeFromWorldPoint(request.pathStart);
+            Node targetNode = Grid.instance.NodeFromWorldPoint(request.pathEnd);
 
             if (startNode.walkable && targetNode.walkable) {
                 Heap<Node> openSet = new Heap<Node>(Grid.instance.MaxSize);
@@ -65,11 +65,11 @@ namespace AStar {
                     }
                 }
             }
-            yield return null;
             if (pathSuccess) {
                 waypoints = RetracePath(startNode, targetNode);
+                pathSuccess = waypoints.Length > 0;
             }
-            PathRequestManager.instance.FinishedProcessingPath(waypoints, pathSuccess);
+            callback(new PathResult(waypoints, pathSuccess, request.callback));
         }
 
 
