@@ -58,8 +58,20 @@ namespace AStar {
             return GetSide(p) != approachSide;
         }
 
-        public void DrawWithGizmos(float length)
-        {
+        /// <summary>
+        /// Used to find the distance to target
+        /// </summary>
+        /// <param name="p"></param>
+        /// <returns></returns>
+        public float DistanceFromPoint(Vector2 p){
+            float y_interceptPerpendicular = p.y - gradientPerpendicular * p.x;
+            float intersectX = (y_interceptPerpendicular - y_intercept) / (gradient - gradientPerpendicular);
+            float intersectY = gradient * intersectX + y_intercept;
+
+            return Vector2.Distance(p, new Vector2(intersectX, intersectY));
+        }
+
+        public void DrawWithGizmos(float length){
             Vector3 lineDir = new Vector3(1, 0, gradient).normalized;
             Vector3 lineCenter = new Vector3(pointOnLine_1.x, 0, pointOnLine_1.y) + Vector3.up;
             Gizmos.DrawLine(lineCenter - lineDir * length / 2f, lineCenter + lineDir * length / 2f);
