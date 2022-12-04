@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Diagnostics;
+using System.Threading;
 
 namespace AStar{
     public class Grid : MonoBehaviour
@@ -11,7 +13,7 @@ namespace AStar{
         //create a singleton
         void Awake() {
             if (instance != null) {
-                Debug.LogError("More than one Grid in scene!");
+                UnityEngine.Debug.LogError("More than one Grid in scene!");
             }else {
                 instance = this;
             }
@@ -77,14 +79,10 @@ namespace AStar{
         void CreateGrid() {
             grid = new Node[gridSizeX, gridSizeY, gridSizeZ]; //create a new grid
             Vector3 worldBottomLeft = transform.position - (Vector3.right * gridWorldSize.x / 2) - (Vector3.forward * gridWorldSize.z / 2); //get the bottom left corner of the grid
-
             //loop through every node in the grid
             for (int x = 0; x < gridSizeX; x++) { //loop through the grid on the x axis
-                Debug.Log(x);
                 for (int y = 0; y < gridSizeY; y++) { //loop through the grid on the y axis
-                    Debug.Log(x + " " + y); 
                     for (int z = 0; z < gridSizeZ; z++) { //loop through the grid on the z axis
-                        Debug.Log(x + " " + y + " " + z);
                         Vector3 worldPoint = worldBottomLeft + (Vector3.right * (x * nodeDiameter + nodeRadius)) + (Vector3.up * (y * nodeDiameter + nodeRadius)) + (Vector3.forward * (z * nodeDiameter + nodeRadius)); //get the world position of the next node depending on which node the loops are on and the additional node specifications
                         bool walkable = !(Physics.CheckSphere(worldPoint, nodeRadius, unwalkableMask)); // Checking if there is obstacle inside of the node it will return true if there is no obstacle
 
@@ -130,9 +128,9 @@ namespace AStar{
 
                 for (int x = 1; x < gridSizeX; x++) {
                     int removeIndex = Mathf.Clamp(x - kernelExtents - 1, 0, gridSizeX); // Removing the left most node from the blur
-                    Debug.Log("removeIndex " + removeIndex);
+                    //Debug.Log("removeIndex " + removeIndex);
                     int addIndex = Mathf.Clamp(x + kernelExtents, 0, gridSizeX - 1); // Adding the right most node from the blur
-                    Debug.Log("addIndex " + addIndex);
+                    //Debug.Log("addIndex " + addIndex);
 
                     penaltiesHorizontalPass[x, z] = penaltiesHorizontalPass[x - 1, z] - grid[removeIndex, 0, z].movementPenalty + grid[addIndex, 0, z].movementPenalty; // Calculating the new penalty for the node
                 }
@@ -213,16 +211,18 @@ namespace AStar{
         /// </summary>
         void OnDrawGizmos() {
             Gizmos.DrawWireCube(transform.position + Vector3.up * (gridWorldSize.y / 2), new Vector3(gridWorldSize.x, gridWorldSize.y, gridWorldSize.z));
+            ThreadStart threadStart = delegate {
+                if (grid != null && displayGridGizmos) {
+                    foreach (Node n in grid) {
 
-            if (grid != null && displayGridGizmos) {
-                foreach (Node n in grid) {
+                        Gizmos.color = Color.Lerp(Color.white, Color.black, Mathf.InverseLerp(penaltyMax, penaltyMin, n.movementPenalty));
 
-                    Gizmos.color = Color.Lerp(Color.white, Color.black, Mathf.InverseLerp(penaltyMax, penaltyMin, n.movementPenalty));
-
-                    Gizmos.color = (n.walkable) ? Gizmos.color : Color.red;
-                    Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter - gizmosGridGap));
+                        Gizmos.color = (n.walkable) ? Gizmos.color : Color.red;
+                        Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter - gizmosGridGap));
+                    }
                 }
-            }
+            };
+            threadStart.Invoke();
         }
     	
 
