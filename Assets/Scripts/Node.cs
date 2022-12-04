@@ -13,7 +13,7 @@ namespace AStar{
         // Position of the node in the grid on the X axis
         public int gridX;
         // Position of the node in the grid on the Y axis
-        public int gridY;
+        public int gridZ;
         // The penalty for moving through this node
         public int movementPenalty;
 
@@ -32,13 +32,13 @@ namespace AStar{
         /// <param name="_walkable"> If it is walkable</param>
         /// <param name="_worldPos"> Its world position</param>
         /// <param name="_gridX"> Grid position on the X axis</param>
-        /// <param name="_gridY"> Grid position on the Y axis</param>
+        /// <param name="_gridZ"> Grid position on the Y axis</param>
         /// <param name="_penalty"> Movement penalty</param>
-        public Node(bool _walkable, Vector3 _worldPos, int _gridX, int _gridY, int _penalty) {
+        public Node(bool _walkable, Vector3 _worldPos, int _gridX, int _gridZ, int _penalty) {
             walkable = _walkable;
             worldPosition = _worldPos;
             gridX = _gridX;
-            gridY = _gridY;
+            gridZ = _gridZ;
             movementPenalty = _penalty;
         }
 

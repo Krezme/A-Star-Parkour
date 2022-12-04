@@ -8,19 +8,19 @@ namespace AStar {
         const float verticalLineGradient = 1e5f;
 
         float gradient;
-        float y_intercept;
+        float z_intercept;
 
-        Vector2 pointOnLine_1;
-        Vector2 pointOnLine_2;
+        Vector3 pointOnLine_1;
+        Vector3 pointOnLine_2;
 
         float gradientPerpendicular;
 
         bool approachSide;
 
-        public Line(Vector2 pointOnLine, Vector2 pointPerpendicularToLine)
+        public Line(Vector3 pointOnLine, Vector3 pointPerpendicularToLine)
         {
             float dx = pointOnLine.x - pointPerpendicularToLine.x;
-            float dy = pointOnLine.y - pointPerpendicularToLine.y;
+            float dz = pointOnLine.z - pointPerpendicularToLine.z;
 
             if (dx == 0)
             {
@@ -28,7 +28,7 @@ namespace AStar {
             }
             else
             {
-                gradientPerpendicular = dy / dx;
+                gradientPerpendicular = dz / dx;
             }
 
             if (gradientPerpendicular == 0)
@@ -40,20 +40,20 @@ namespace AStar {
                 gradient = -1 / gradientPerpendicular;
             }
 
-            y_intercept = pointOnLine.y - gradient * pointOnLine.x;
+            z_intercept = pointOnLine.z - gradient * pointOnLine.x;
             pointOnLine_1 = pointOnLine;
-            pointOnLine_2 = pointOnLine + new Vector2(1, gradient);
+            pointOnLine_2 = pointOnLine + new Vector3(1, 0, gradient);
 
             approachSide = false;
             approachSide = GetSide(pointPerpendicularToLine);
         }
 
-        bool GetSide(Vector2 p)
+        bool GetSide(Vector3 p)
         {
-            return (p.x - pointOnLine_1.x) * (pointOnLine_2.y - pointOnLine_1.y) > (p.y - pointOnLine_1.y) * (pointOnLine_2.x - pointOnLine_1.x);
+            return (p.x - pointOnLine_1.x) * (pointOnLine_2.z - pointOnLine_1.z) > (p.z - pointOnLine_1.z) * (pointOnLine_2.x - pointOnLine_1.x);
         }
 
-        public bool HasCrossedLine(Vector2 p)
+        public bool HasCrossedLine(Vector3 p)
         {
             return GetSide(p) != approachSide;
         }
@@ -63,17 +63,17 @@ namespace AStar {
         /// </summary>
         /// <param name="p"></param>
         /// <returns></returns>
-        public float DistanceFromPoint(Vector2 p){
-            float y_interceptPerpendicular = p.y - gradientPerpendicular * p.x;
-            float intersectX = (y_interceptPerpendicular - y_intercept) / (gradient - gradientPerpendicular);
-            float intersectY = gradient * intersectX + y_intercept;
+        public float DistanceFromPoint(Vector3 p){
+            float z_interceptPerpendicular = p.z - gradientPerpendicular * p.x;
+            float intersectX = (z_interceptPerpendicular - z_intercept) / (gradient - gradientPerpendicular);
+            float intersectZ = gradient * intersectX + z_intercept;
 
-            return Vector2.Distance(p, new Vector2(intersectX, intersectY));
+            return Vector3.Distance(p, new Vector3(intersectX, 0, intersectZ));
         }
 
         public void DrawWithGizmos(float length){
             Vector3 lineDir = new Vector3(1, 0, gradient).normalized;
-            Vector3 lineCenter = new Vector3(pointOnLine_1.x, 0, pointOnLine_1.y) + Vector3.up;
+            Vector3 lineCenter = new Vector3(pointOnLine_1.x, 0, pointOnLine_1.z) + Vector3.up;
             Gizmos.DrawLine(lineCenter - lineDir * length / 2f, lineCenter + lineDir * length / 2f);
         }
     }

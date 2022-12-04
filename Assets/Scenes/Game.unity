@@ -789,7 +789,7 @@ MonoBehaviour:
   unwalkableMask:
     serializedVersion: 2
     m_Bits: 64
-  gridWorldSize: {x: 100, y: 100}
+  gridWorldSize: {x: 100, y: 0, z: 100}
   nodeRadius: 0.5
   walkableRegions:
   - terrainMask:

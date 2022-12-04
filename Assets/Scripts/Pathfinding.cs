@@ -76,7 +76,7 @@ namespace AStar {
 
         int GetDistance(Node nodeA, Node nodeB) {
             int dstX = Mathf.Abs(nodeA.gridX - nodeB.gridX);
-            int dstY = Mathf.Abs(nodeA.gridY - nodeB.gridY);
+            int dstY = Mathf.Abs(nodeA.gridZ - nodeB.gridZ);
 
             if (dstX > dstY) {
                 return 14 * dstY + 10 * (dstX - dstY);
@@ -102,7 +102,7 @@ namespace AStar {
             Vector2 directionOld = Vector2.zero;
 
             for (int i = 1; i < path.Count; i++) {
-                Vector2 directionNew = new Vector2(path[i - 1].gridX - path[i].gridX, path[i - 1].gridY - path[i].gridY);
+                Vector2 directionNew = new Vector2(path[i - 1].gridX - path[i].gridX, path[i - 1].gridZ - path[i].gridZ);
                 if (directionNew != directionOld) {
                     waypoints.Add(path[i].worldPosition);
                 }

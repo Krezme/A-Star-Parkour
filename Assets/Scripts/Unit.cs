@@ -64,8 +64,8 @@ namespace AStar {
             float speedPercent = 1;
 
             while (followingPath) {
-                Vector2 pos2D = new Vector2(transform.position.x, transform.position.z);
-                while (path.turnBoundaries[pathIndex].HasCrossedLine(pos2D)) {
+                Vector3 pos3D = new Vector3(transform.position.x, transform.position.y, transform.position.z);
+                while (path.turnBoundaries[pathIndex].HasCrossedLine(pos3D)) {
                     if (pathIndex == path.finishLineIndex) {
                         followingPath = false;
                         break;
@@ -79,7 +79,7 @@ namespace AStar {
 
                     // Calculates the speed percentage based on the distance to the target
                     if (pathIndex >= path.slowDownIndex && stoppingDst > 0) {
-                        speedPercent = Mathf.Clamp01(path.turnBoundaries[path.finishLineIndex].DistanceFromPoint(pos2D) / stoppingDst);
+                        speedPercent = Mathf.Clamp01(path.turnBoundaries[path.finishLineIndex].DistanceFromPoint(pos3D) / stoppingDst);
                         if (speedPercent < 0.01f) {
                             followingPath = false;
                         }

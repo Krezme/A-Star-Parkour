@@ -25,12 +25,12 @@ namespace AStar {
             turnBoundaries = new Line[lookPoints.Length];
             finishLineIndex = turnBoundaries.Length - 1;
 
-            Vector2 previousPoint = V3ToV2(startPos);
+            Vector3 previousPoint = startPos;
             for (int i = 0; i < lookPoints.Length; i++)
             {
-                Vector2 currentPoint = V3ToV2(lookPoints[i]);
-                Vector2 dirToCurrentPoint = (currentPoint - previousPoint).normalized;
-                Vector2 turnBoundaryPoint = (i == finishLineIndex) ? currentPoint : currentPoint - dirToCurrentPoint * turnDst;
+                Vector3 currentPoint = lookPoints[i];
+                Vector3 dirToCurrentPoint = (currentPoint - previousPoint).normalized;
+                Vector3 turnBoundaryPoint = (i == finishLineIndex) ? currentPoint : currentPoint - dirToCurrentPoint * turnDst;
                 turnBoundaries[i] = new Line(turnBoundaryPoint, previousPoint - dirToCurrentPoint * turnDst);
                 previousPoint = turnBoundaryPoint;
             }
