@@ -18,6 +18,7 @@ namespace AStar{
 
             nodeDiameter = nodeRadius * 2;
             gridSizeX = Mathf.RoundToInt(gridWorldSize.x / nodeDiameter);
+            gridSizeY = Mathf.RoundToInt(gridWorldSize.y / nodeDiameter);
             gridSizeZ = Mathf.RoundToInt(gridWorldSize.z / nodeDiameter);
 
             foreach (TerrainType region in walkableRegions) {
@@ -48,14 +49,15 @@ namespace AStar{
         // Dictionary of all walkable layers and their movement penalty
         Dictionary<int, int> walkableRegionsDictionary = new Dictionary<int, int>();
         // An array of all the nodes in the grid
-        Node[,] grid;
+        Node[,,] grid;
 
         // The diameter of the nodes in world units
         float nodeDiameter;
         // The number of nodes in the grid on the x axis
         int gridSizeX;
-        // The number of nodes in the grid on the y axis (Actual World Space is z axis)
-        //int gridSizeY;
+        // The number of nodes in the grid on the y axis
+        int gridSizeY;
+        // The number of nodes in the grid on the z axis
         int gridSizeZ;
 
         // the smallest possible penalty for a node
@@ -65,7 +67,7 @@ namespace AStar{
         // The Max size of the grid
         public int MaxSize{
             get{
-                return gridSizeX * gridSizeZ;
+                return gridSizeX * gridSizeY * gridSizeZ;
             }
         }
 
@@ -73,29 +75,35 @@ namespace AStar{
         /// Generating the grid
         /// </summary>
         void CreateGrid() {
-            grid = new Node[gridSizeX, gridSizeZ]; //create a new grid
-            Vector3 worldBottomLeft = transform.position - Vector3.right * gridWorldSize.x / 2 - Vector3.forward * gridWorldSize.z / 2; //get the bottom left corner of the grid
+            grid = new Node[gridSizeX, gridSizeY, gridSizeZ]; //create a new grid
+            Vector3 worldBottomLeft = transform.position - (Vector3.right * gridWorldSize.x / 2) - (Vector3.forward * gridWorldSize.z / 2); //get the bottom left corner of the grid
 
             //loop through every node in the grid
             for (int x = 0; x < gridSizeX; x++) { //loop through the grid on the x axis
-                for (int z = 0; z < gridSizeZ; z++) { //loop through the grid on the y (z) axis
-                    Vector3 worldPoint = worldBottomLeft + Vector3.right * (x * nodeDiameter + nodeRadius) + Vector3.forward * (z * nodeDiameter + nodeRadius); //get the world position of the next node depending on which node the loops are on and the additional node specifications
-                    bool walkable = !(Physics.CheckSphere(worldPoint, nodeRadius, unwalkableMask)); // Checking if there is obstacle inside of the node it will return true if there is no obstacle
+                Debug.Log(x);
+                for (int y = 0; y < gridSizeY; y++) { //loop through the grid on the y axis
+                    Debug.Log(x + " " + y); 
+                    for (int z = 0; z < gridSizeZ; z++) { //loop through the grid on the z axis
+                        Debug.Log(x + " " + y + " " + z);
+                        Vector3 worldPoint = worldBottomLeft + (Vector3.right * (x * nodeDiameter + nodeRadius)) + (Vector3.up * (y * nodeDiameter + nodeRadius)) + (Vector3.forward * (z * nodeDiameter + nodeRadius)); //get the world position of the next node depending on which node the loops are on and the additional node specifications
+                        bool walkable = !(Physics.CheckSphere(worldPoint, nodeRadius, unwalkableMask)); // Checking if there is obstacle inside of the node it will return true if there is no obstacle
 
-                    int movementPenalty = 0; // The movement penalty of the node
+                        int movementPenalty = 0; // The movement penalty of the node
 
-                    //raycast to check if the node is on a walkable layer and which walkable layer it is on
-                    Ray ray = new Ray(worldPoint + Vector3.up * 50, Vector3.down); // position of the raycast is the center of the node and the direction is down
-                    RaycastHit hit; // the hit information of the raycast
-                    if (Physics.Raycast(ray, out hit, 100, walkableMask)) { // if the raycast hits something with a walkable layer
-                        walkableRegionsDictionary.TryGetValue(hit.collider.gameObject.layer, out movementPenalty); // get the movement penalty of the layer the node is on
+                        //raycast to check if the node is on a walkable layer and which walkable layer it is on
+                        Ray ray = new Ray(worldPoint + Vector3.up * 0.4f, Vector3.down); // position of the raycast is the center of the node and the direction is down
+                        RaycastHit hit; // the hit information of the raycast
+                        if (Physics.Raycast(ray, out hit, 0.9f, walkableMask)) { // if the raycast hits something with a walkable layer
+                            walkableRegionsDictionary.TryGetValue(hit.collider.gameObject.layer, out movementPenalty); // get the movement penalty of the layer the node is on
+                        }
+                        
+                        if (!walkable) { // if the node is not walkable
+                            movementPenalty += obstacleProximityPenalty; // add the obstacle proximity penalty to the movement penalty
+                        }
+
+                        grid[x, y, z] = new Node(walkable, worldPoint, x, y, z, movementPenalty); // create a new node in the grid and record all the information about it
+                        
                     }
-                    
-                    if (!walkable) { // if the node is not walkable
-                        movementPenalty += obstacleProximityPenalty; // add the obstacle proximity penalty to the movement penalty
-                    }
-
-                    grid[x, z] = new Node(walkable, worldPoint, x, z, movementPenalty); // create a new node in the grid and record all the information about it
                 }
             }
 
@@ -111,13 +119,13 @@ namespace AStar{
             int kernelExtents = (kernelSize - 1) / 2;
 
             int[,] penaltiesHorizontalPass = new int[gridSizeX, gridSizeZ]; // creating a new array to store the horizontal pass of the blur
-            int[,] penaltiesVerticalPass = new int[gridSizeX, gridSizeZ]; // creating a new array to store the vertical pass of the blur
+            int[,] penaltiesDepthPass = new int[gridSizeX, gridSizeZ]; // creating a new array to store the vertical pass of the blur
 
             // Horizontal Blur
             for (int z = 0; z < gridSizeZ; z++) { // Looping through the Y Grid size
                 for (int x = -kernelExtents; x <= kernelExtents; x++) { // Looping through the entire extent of the blur range
                     int sampleX = Mathf.Clamp(x, 0, kernelExtents); // Clamping the sample X to the kernel extents
-                    penaltiesHorizontalPass[0, z] += grid[sampleX, z].movementPenalty; // Adding the penalty from the associated node in the grid 
+                    penaltiesHorizontalPass[0, z] += grid[sampleX, 0, z].movementPenalty; // Adding the penalty from the associated node in the grid 
                 }
 
                 for (int x = 1; x < gridSizeX; x++) {
@@ -126,26 +134,26 @@ namespace AStar{
                     int addIndex = Mathf.Clamp(x + kernelExtents, 0, gridSizeX - 1); // Adding the right most node from the blur
                     Debug.Log("addIndex " + addIndex);
 
-                    penaltiesHorizontalPass[x, z] = penaltiesHorizontalPass[x - 1, z] - grid[removeIndex, z].movementPenalty + grid[addIndex, z].movementPenalty; // Calculating the new penalty for the node
+                    penaltiesHorizontalPass[x, z] = penaltiesHorizontalPass[x - 1, z] - grid[removeIndex, 0, z].movementPenalty + grid[addIndex, 0, z].movementPenalty; // Calculating the new penalty for the node
                 }
             }
 
             for (int x = 0; x < gridSizeX; x++) {
                 for (int z = -kernelExtents; z <= kernelExtents; z++) {
                     int sampleZ = Mathf.Clamp(z, 0, kernelExtents);
-                    penaltiesVerticalPass[x, 0] += penaltiesHorizontalPass[x, sampleZ];
+                    penaltiesDepthPass[x, 0] += penaltiesHorizontalPass[x, sampleZ];
                 }
 
-                int blurredPenalty = Mathf.RoundToInt((float)penaltiesVerticalPass[x, 0] / (kernelSize * kernelSize));
-                grid[x, 0].movementPenalty = blurredPenalty;
+                int blurredPenalty = Mathf.RoundToInt((float)penaltiesDepthPass[x, 0] / (kernelSize * kernelSize));
+                grid[x, 0, 0].movementPenalty = blurredPenalty;
 
                 for (int z = 1; z < gridSizeZ; z++) {
                     int removeIndex = Mathf.Clamp(z - kernelExtents - 1, 0, gridSizeZ);
                     int addIndex = Mathf.Clamp(z + kernelExtents, 0, gridSizeZ - 1);
 
-                    penaltiesVerticalPass[x, z] = penaltiesVerticalPass[x, z - 1] - penaltiesHorizontalPass[x, removeIndex] + penaltiesHorizontalPass[x, addIndex];
-                    blurredPenalty = Mathf.RoundToInt((float)penaltiesVerticalPass[x, z] / (kernelSize * kernelSize));
-                    grid[x, z].movementPenalty = blurredPenalty;
+                    penaltiesDepthPass[x, z] = penaltiesDepthPass[x, z - 1] - penaltiesHorizontalPass[x, removeIndex] + penaltiesHorizontalPass[x, addIndex];
+                    blurredPenalty = Mathf.RoundToInt((float)penaltiesDepthPass[x, z] / (kernelSize * kernelSize));
+                    grid[x, 0, z].movementPenalty = blurredPenalty;
 
                     if (blurredPenalty > penaltyMin) {
                         penaltyMin = blurredPenalty;
@@ -175,7 +183,7 @@ namespace AStar{
                     int checkZ = node.gridZ + z;
 
                     if (checkX >= 0 && checkX < gridSizeX && checkZ >= 0 && checkZ < gridSizeZ) {
-                        neighbours.Add(grid[checkX, checkZ]);
+                        neighbours.Add(grid[checkX, 0, checkZ]);
                     }
                 }
             }
@@ -197,14 +205,14 @@ namespace AStar{
             int x = Mathf.RoundToInt((gridSizeX - 1) * percentX);
             int z = Mathf.RoundToInt((gridSizeZ - 1) * percentZ);
 
-            return grid[x, z];
+            return grid[x, 0, z];
         }
 
         /// <summary>
         /// Drawing the grid in the scene view with black, white and red nodes depending on the walkable state of the node
         /// </summary>
         void OnDrawGizmos() {
-            Gizmos.DrawWireCube(transform.position, new Vector3(gridWorldSize.x, 1, gridWorldSize.z));
+            Gizmos.DrawWireCube(transform.position + Vector3.up * (gridWorldSize.y / 2), new Vector3(gridWorldSize.x, gridWorldSize.y, gridWorldSize.z));
 
             if (grid != null && displayGridGizmos) {
                 foreach (Node n in grid) {

@@ -785,11 +785,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10f1fd5ddfdb12c4cabfae708eca0556, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  displayGridGizmos: 1
+  displayGridGizmos: 0
   unwalkableMask:
     serializedVersion: 2
     m_Bits: 64
-  gridWorldSize: {x: 100, y: 0, z: 100}
+  gridWorldSize: {x: 100, y: 100, z: 100}
   nodeRadius: 0.5
   walkableRegions:
   - terrainMask:
@@ -801,7 +801,7 @@ MonoBehaviour:
       m_Bits: 256
     terrainPenalty: 5
   obstacleProximityPenalty: 10
-  gizmosGridGap: 0
+  gizmosGridGap: 0.5
 --- !u!4 &527007728
 Transform:
   m_ObjectHideFlags: 0
@@ -931,7 +931,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 722472785}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -40.8, y: 0.5, z: -46.2}
+  m_LocalPosition: {x: -40.8, y: 0.88, z: -46.2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
