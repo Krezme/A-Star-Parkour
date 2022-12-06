@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Diagnostics;
+//using System.Diagnostics;
 using System.Threading;
 
 namespace AStar{
@@ -85,17 +85,24 @@ namespace AStar{
                     for (int z = 0; z < gridSizeZ; z++) { //loop through the grid on the z axis
                         Vector3 worldPoint = worldBottomLeft + (Vector3.right * (x * nodeDiameter + nodeRadius)) + (Vector3.up * (y * nodeDiameter + nodeRadius)) + (Vector3.forward * (z * nodeDiameter + nodeRadius)); //get the world position of the next node depending on which node the loops are on and the additional node specifications
                         bool walkable = !(Physics.CheckSphere(worldPoint, nodeRadius, unwalkableMask)); // Checking if there is obstacle inside of the node it will return true if there is no obstacle
+                        bool emptySpace = false; // if the space is empty (most usually air)
 
                         int movementPenalty = 0; // The movement penalty of the node
 
                         //raycast to check if the node is on a walkable layer and which walkable layer it is on
                         Ray ray = new Ray(worldPoint + Vector3.up * 0.4f, Vector3.down); // position of the raycast is the center of the node and the direction is down
                         RaycastHit hit; // the hit information of the raycast
-                        if (Physics.Raycast(ray, out hit, 0.9f, walkableMask)) { // if the raycast hits something with a walkable layer
+                        if (Physics.Raycast(ray, out hit, 2f, walkableMask)) { // if the raycast hits something with a walkable layer
                             walkableRegionsDictionary.TryGetValue(hit.collider.gameObject.layer, out movementPenalty); // get the movement penalty of the layer the node is on
+                        }else {
+                            emptySpace = true;
+                            walkable = false; // if the raycast does not hit anything with a walkable layer the node is not walkable
                         }
                         
-                        if (!walkable) { // if the node is not walkable
+                        if (emptySpace) {
+                            movementPenalty = int.MaxValue;
+                        }
+                        else if (!walkable) { // if the node is not walkable
                             movementPenalty += obstacleProximityPenalty; // add the obstacle proximity penalty to the movement penalty
                         }
 
@@ -172,16 +179,19 @@ namespace AStar{
             List<Node> neighbours = new List<Node>();
 
             for (int x = -1; x <= 1; x++) {
-                for (int z = -1; z <= 1; z++) {
-                    if (x == 0 && z == 0) {
-                        continue;
-                    }
+                for (int y = -1; y <= 1; y++) {
+                    for (int z = -1; z <= 1; z++) {
+                        if (x == 0 && y == 0 && z == 0) {
+                            continue;
+                        }
 
-                    int checkX = node.gridX + x;
-                    int checkZ = node.gridZ + z;
+                        int checkX = node.gridX + x;
+                        int checkY = node.gridY + y;
+                        int checkZ = node.gridZ + z;
 
-                    if (checkX >= 0 && checkX < gridSizeX && checkZ >= 0 && checkZ < gridSizeZ) {
-                        neighbours.Add(grid[checkX, 0, checkZ]);
+                        if (checkX >= 0 && checkX < gridSizeX && checkY >= 0 && checkY < gridSizeY && checkZ >= 0 && checkZ < gridSizeZ) {
+                            neighbours.Add(grid[checkX, checkY, checkZ]);
+                        }
                     }
                 }
             }
@@ -195,15 +205,24 @@ namespace AStar{
         /// <param name="worldPosition"> World position coordinates </param>
         /// <returns>The specific node that covers that world space position</returns>
         public Node NodeFromWorldPoint (Vector3 worldPosition) {
+            
             float percentX = (worldPosition.x + gridWorldSize.x / 2) / gridWorldSize.x;
+            float percentY = ((worldPosition.y - 50)+ gridWorldSize.y / 2) / gridWorldSize.y;
             float percentZ = (worldPosition.z + gridWorldSize.z / 2) / gridWorldSize.z;
+            Debug.Log("NodeFromWorldPoint 1: " + percentY);
             percentX = Mathf.Clamp01(percentX);
+            percentY = Mathf.Clamp01(percentY);
             percentZ = Mathf.Clamp01(percentZ);
+            Debug.Log("NodeFromWorldPoint 2: " + percentY);
 
             int x = Mathf.RoundToInt((gridSizeX - 1) * percentX);
+            int y = Mathf.RoundToInt((gridSizeY - 1) * percentY);
             int z = Mathf.RoundToInt((gridSizeZ - 1) * percentZ);
+            Debug.Log("NodeFromWorldPoint 3: " + y);
 
-            return grid[x, 0, z];
+            Debug.Log("NodeFromWorldPoint " + grid[x, y, z].worldPosition);
+
+            return grid[x, y, z];
         }
 
         /// <summary>
