@@ -90,7 +90,7 @@ namespace AStar {
                     Quaternion targetRotation = Quaternion.LookRotation(new Vector3((path.lookPoints[pathIndex] - transform.position).x, 0, (path.lookPoints[pathIndex] - transform.position).z));
                     transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * turnSpeed);
                     //transform.Translate(Vector3.forward * Time.deltaTime * speed * speedPercent, Space.Self);
-                    controller.Move(new Vector3(transform.forward.x, 0, transform.forward.z) * Time.deltaTime * speed * speedPercent);
+                    controller.Move(new Vector3(transform.forward.x, transform.forward.y, transform.forward.z) * Time.deltaTime * speed * speedPercent);
                 }
                 yield return null;
             }

@@ -118,48 +118,52 @@ namespace AStar{
             int kernelSize = blurSize * 2 + 1;
             int kernelExtents = (kernelSize - 1) / 2;
 
-            int[,] penaltiesHorizontalPass = new int[gridSizeX, gridSizeZ]; // creating a new array to store the horizontal pass of the blur
-            int[,] penaltiesDepthPass = new int[gridSizeX, gridSizeZ]; // creating a new array to store the vertical pass of the blur
-
             // Horizontal Blur
-            for (int z = 0; z < gridSizeZ; z++) { // Looping through the Y Grid size
-                for (int x = -kernelExtents; x <= kernelExtents; x++) { // Looping through the entire extent of the blur range
-                    int sampleX = Mathf.Clamp(x, 0, kernelExtents); // Clamping the sample X to the kernel extents
-                    penaltiesHorizontalPass[0, z] += grid[sampleX, 0, z].movementPenalty; // Adding the penalty from the associated node in the grid 
-                }
+            for (int y = 0; y < gridSizeY; y++) { // Looping through the Y Grid size
 
-                for (int x = 1; x < gridSizeX; x++) {
-                    int removeIndex = Mathf.Clamp(x - kernelExtents - 1, 0, gridSizeX); // Removing the left most node from the blur
-                    //Debug.Log("removeIndex " + removeIndex);
-                    int addIndex = Mathf.Clamp(x + kernelExtents, 0, gridSizeX - 1); // Adding the right most node from the blur
-                    //Debug.Log("addIndex " + addIndex);
+                int[,] penaltiesHorizontalPass = new int[gridSizeX, gridSizeZ]; // creating a new array to store the horizontal pass of the blur
+                int[,] penaltiesDepthPass = new int[gridSizeX, gridSizeZ]; // creating a new array to store the vertical pass of the blur
 
-                    penaltiesHorizontalPass[x, z] = penaltiesHorizontalPass[x - 1, z] - grid[removeIndex, 0, z].movementPenalty + grid[addIndex, 0, z].movementPenalty; // Calculating the new penalty for the node
-                }
-            }
-
-            for (int x = 0; x < gridSizeX; x++) {
-                for (int z = -kernelExtents; z <= kernelExtents; z++) {
-                    int sampleZ = Mathf.Clamp(z, 0, kernelExtents);
-                    penaltiesDepthPass[x, 0] += penaltiesHorizontalPass[x, sampleZ];
-                }
-
-                int blurredPenalty = Mathf.RoundToInt((float)penaltiesDepthPass[x, 0] / (kernelSize * kernelSize));
-                grid[x, 0, 0].movementPenalty = blurredPenalty;
-
-                for (int z = 1; z < gridSizeZ; z++) {
-                    int removeIndex = Mathf.Clamp(z - kernelExtents - 1, 0, gridSizeZ);
-                    int addIndex = Mathf.Clamp(z + kernelExtents, 0, gridSizeZ - 1);
-
-                    penaltiesDepthPass[x, z] = penaltiesDepthPass[x, z - 1] - penaltiesHorizontalPass[x, removeIndex] + penaltiesHorizontalPass[x, addIndex];
-                    blurredPenalty = Mathf.RoundToInt((float)penaltiesDepthPass[x, z] / (kernelSize * kernelSize));
-                    grid[x, 0, z].movementPenalty = blurredPenalty;
-
-                    if (blurredPenalty > penaltyMin) {
-                        penaltyMin = blurredPenalty;
+                for (int z = 0; z < gridSizeZ; z++) { // Looping through the Z Grid size
+                    for (int x = -kernelExtents; x <= kernelExtents; x++) { // Looping through the entire extent of the blur range
+                        int sampleX = Mathf.Clamp(x, 0, kernelExtents); // Clamping the sample X to the kernel extents
+                        penaltiesHorizontalPass[0, z] += grid[sampleX, 0, z].movementPenalty; // Adding the penalty from the associated node in the grid 
                     }
-                    if (blurredPenalty < penaltyMax) {
-                        penaltyMax = blurredPenalty;
+
+                    for (int x = 1; x < gridSizeX; x++) {
+                        int removeIndex = Mathf.Clamp(x - kernelExtents - 1, 0, gridSizeX); // Removing the left most node from the blur
+                        //Debug.Log("removeIndex " + removeIndex);
+                        int addIndex = Mathf.Clamp(x + kernelExtents, 0, gridSizeX - 1); // Adding the right most node from the blur
+                        //Debug.Log("addIndex " + addIndex);
+
+                        penaltiesHorizontalPass[x, z] = penaltiesHorizontalPass[x - 1, z] - grid[removeIndex, 0, z].movementPenalty + grid[addIndex, 0, z].movementPenalty; // Calculating the new penalty for the node
+                    }
+                }
+
+                //Depth Blur
+                for (int x = 0; x < gridSizeX; x++) {
+                    for (int z = -kernelExtents; z <= kernelExtents; z++) {
+                        int sampleZ = Mathf.Clamp(z, 0, kernelExtents);
+                        penaltiesDepthPass[x, 0] += penaltiesHorizontalPass[x, sampleZ];
+                    }
+
+                    int blurredPenalty = Mathf.RoundToInt((float)penaltiesDepthPass[x, 0] / (kernelSize * kernelSize));
+                    grid[x, 0, 0].movementPenalty = blurredPenalty;
+
+                    for (int z = 1; z < gridSizeZ; z++) {
+                        int removeIndex = Mathf.Clamp(z - kernelExtents - 1, 0, gridSizeZ);
+                        int addIndex = Mathf.Clamp(z + kernelExtents, 0, gridSizeZ - 1);
+
+                        penaltiesDepthPass[x, z] = penaltiesDepthPass[x, z - 1] - penaltiesHorizontalPass[x, removeIndex] + penaltiesHorizontalPass[x, addIndex];
+                        blurredPenalty = Mathf.RoundToInt((float)penaltiesDepthPass[x, z] / (kernelSize * kernelSize));
+                        grid[x, 0, z].movementPenalty = blurredPenalty;
+
+                        if (blurredPenalty > penaltyMin) {
+                            penaltyMin = blurredPenalty;
+                        }
+                        if (blurredPenalty < penaltyMax) {
+                            penaltyMax = blurredPenalty;
+                        }
                     }
                 }
             }
@@ -226,7 +230,7 @@ namespace AStar{
 
                         Gizmos.color = Color.Lerp(Color.white, Color.black, Mathf.InverseLerp(penaltyMax, penaltyMin, n.movementPenalty));
 
-                        Gizmos.color = (n.walkable) ? Gizmos.color : Gizmos.color;
+                        Gizmos.color = (n.walkable) ? Gizmos.color : Color.red;
                         Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter - gizmosGridGap));
                     }
                 }
