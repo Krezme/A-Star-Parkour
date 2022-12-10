@@ -65,9 +65,15 @@ namespace AStar {
                     }
                 }
             }
+            else {
+                Debug.Log("Start or End node is not walkable!: " + startNode.walkable + " " + targetNode.walkable);
+            }
             if (pathSuccess) {
                 waypoints = RetracePath(startNode, targetNode);
                 pathSuccess = waypoints.Length > 0;
+            }
+            else {
+                Debug.Log("Path not found!");
             }
             callback(new PathResult(waypoints, pathSuccess, request.callback));
         }

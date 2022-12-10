@@ -58,9 +58,9 @@ namespace AStar {
             Gizmos.color = Color.black;
             foreach (Vector3 p in lookPoints)
             {
-                Gizmos.DrawCube(p + Vector3.up, Vector3.one);
+                Gizmos.DrawCube(p, Vector3.one);
             }
-            Gizmos.color = Color.white;
+            Gizmos.color = Color.blue;
             foreach (Line l in turnBoundaries)
             {
                 l.DrawWithGizmos(10);

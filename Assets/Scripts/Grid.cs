@@ -85,24 +85,19 @@ namespace AStar{
                     for (int z = 0; z < gridSizeZ; z++) { //loop through the grid on the z axis
                         Vector3 worldPoint = worldBottomLeft + (Vector3.right * (x * nodeDiameter + nodeRadius)) + (Vector3.up * (y * nodeDiameter + nodeRadius)) + (Vector3.forward * (z * nodeDiameter + nodeRadius)); //get the world position of the next node depending on which node the loops are on and the additional node specifications
                         bool walkable = !(Physics.CheckSphere(worldPoint, nodeRadius, unwalkableMask)); // Checking if there is obstacle inside of the node it will return true if there is no obstacle
-                        bool emptySpace = false; // if the space is empty (most usually air)
 
                         int movementPenalty = 0; // The movement penalty of the node
 
                         //raycast to check if the node is on a walkable layer and which walkable layer it is on
-                        Ray ray = new Ray(worldPoint + Vector3.up * 0.4f, Vector3.down); // position of the raycast is the center of the node and the direction is down
+                        Ray ray = new Ray(worldPoint + Vector3.up * 0.1f, Vector3.down); // position of the raycast is the center of the node and the direction is down
                         RaycastHit hit; // the hit information of the raycast
-                        if (Physics.Raycast(ray, out hit, 2f, walkableMask)) { // if the raycast hits something with a walkable layer
+                        if (Physics.Raycast(ray, out hit, 1f, walkableMask)) { // if the raycast hits something with a walkable layer
                             walkableRegionsDictionary.TryGetValue(hit.collider.gameObject.layer, out movementPenalty); // get the movement penalty of the layer the node is on
                         }else {
-                            emptySpace = true;
                             walkable = false; // if the raycast does not hit anything with a walkable layer the node is not walkable
                         }
-                        
-                        if (emptySpace) {
-                            movementPenalty = int.MaxValue;
-                        }
-                        else if (!walkable) { // if the node is not walkable
+
+                        if (!walkable) { // if the node is not walkable
                             movementPenalty += obstacleProximityPenalty; // add the obstacle proximity penalty to the movement penalty
                         }
 
@@ -207,20 +202,15 @@ namespace AStar{
         public Node NodeFromWorldPoint (Vector3 worldPosition) {
             
             float percentX = (worldPosition.x + gridWorldSize.x / 2) / gridWorldSize.x;
-            float percentY = ((worldPosition.y - 50)+ gridWorldSize.y / 2) / gridWorldSize.y;
+            float percentY = gridWorldSize.y > 1 ? ((worldPosition.y - gridWorldSize.y/2) + gridWorldSize.y / 2) / gridWorldSize.y : 1;
             float percentZ = (worldPosition.z + gridWorldSize.z / 2) / gridWorldSize.z;
-            Debug.Log("NodeFromWorldPoint 1: " + percentY);
             percentX = Mathf.Clamp01(percentX);
             percentY = Mathf.Clamp01(percentY);
             percentZ = Mathf.Clamp01(percentZ);
-            Debug.Log("NodeFromWorldPoint 2: " + percentY);
 
             int x = Mathf.RoundToInt((gridSizeX - 1) * percentX);
             int y = Mathf.RoundToInt((gridSizeY - 1) * percentY);
             int z = Mathf.RoundToInt((gridSizeZ - 1) * percentZ);
-            Debug.Log("NodeFromWorldPoint 3: " + y);
-
-            Debug.Log("NodeFromWorldPoint " + grid[x, y, z].worldPosition);
 
             return grid[x, y, z];
         }
@@ -236,7 +226,7 @@ namespace AStar{
 
                         Gizmos.color = Color.Lerp(Color.white, Color.black, Mathf.InverseLerp(penaltyMax, penaltyMin, n.movementPenalty));
 
-                        Gizmos.color = (n.walkable) ? Gizmos.color : Color.red;
+                        Gizmos.color = (n.walkable) ? Gizmos.color : Gizmos.color;
                         Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter - gizmosGridGap));
                     }
                 }

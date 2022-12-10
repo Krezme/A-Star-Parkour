@@ -14,6 +14,7 @@ namespace AStar {
         public float turnSpeed = 3;
         public float turnDst = 5;
         public float stoppingDst = 10;
+        public CharacterController controller;
 
         Path path;
 
@@ -86,9 +87,10 @@ namespace AStar {
                     }
 
                     // Moves and Rotates the AI
-                    Quaternion targetRotation = Quaternion.LookRotation(path.lookPoints[pathIndex] - transform.position);
+                    Quaternion targetRotation = Quaternion.LookRotation(new Vector3((path.lookPoints[pathIndex] - transform.position).x, 0, (path.lookPoints[pathIndex] - transform.position).z));
                     transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * turnSpeed);
-                    transform.Translate(Vector3.forward * Time.deltaTime * speed * speedPercent, Space.Self);
+                    //transform.Translate(Vector3.forward * Time.deltaTime * speed * speedPercent, Space.Self);
+                    controller.Move(new Vector3(transform.forward.x, 0, transform.forward.z) * Time.deltaTime * speed * speedPercent);
                 }
                 yield return null;
             }
