@@ -35,8 +35,6 @@ namespace AStar{
         public bool displayGridGizmos;
         [Tooltip("Layers that the enemy cannot walk on")]
         public LayerMask unwalkableMask;
-        public LayerMask specialMasks;
-        [Tooltip("The size of the grid in world units")]
         public Vector3 gridWorldSize;
         [Tooltip("The radius of the nodes in world units. The diameter is calculated automatically. (2x the radius)")]
         public float nodeRadius;
@@ -85,18 +83,24 @@ namespace AStar{
                 for (int y = 0; y < gridSizeY; y++) { //loop through the grid on the y axis
                     for (int z = 0; z < gridSizeZ; z++) { //loop through the grid on the z axis
                         Vector3 worldPoint = worldBottomLeft + (Vector3.right * (x * nodeDiameter + nodeRadius)) + (Vector3.up * (y * nodeDiameter + nodeRadius)) + (Vector3.forward * (z * nodeDiameter + nodeRadius)); //get the world position of the next node depending on which node the loops are on and the additional node specifications
-                        //? removed the unwalkableMask variable from the Physics.ChackSphere below
-                        bool walkable = !(Physics.CheckSphere(worldPoint, nodeRadius, unwalkableMask)); // Checking if there is obstacle inside of the node it will return true if there is no obstacle
+                        bool walkable = true;
+                        //walkable = !(Physics.CheckSphere(worldPoint, nodeRadius, unwalkableMask)); // Checking if there is obstacle inside of the node it will return true if there is no obstacle
 
                         int movementPenalty = 0; // The movement penalty of the node
 
                         //raycast to check if the node is on a walkable layer and which walkable layer it is on
                         Ray ray = new Ray(worldPoint + Vector3.up * 0.1f, Vector3.down); // position of the raycast is the center of the node and the direction is down
                         RaycastHit hit; // the hit information of the raycast
-                        if (Physics.Raycast(ray, out hit, nodeDiameter, walkableMask, QueryTriggerInteraction.UseGlobal) && !(Physics.OverlapSphere(worldPoint + Vector3.up * 0.1f, nodeRadius/2, walkableMask).Length > 0)) { // if the raycast hits something with a walkable layer
+                        Collider[] obstacles = Physics.OverlapSphere(worldPoint, nodeRadius/5, walkableMask); // Checking if there is obstacle inside of the node it will return true if there is no obstacle
+                        if (Physics.Raycast(ray, out hit, nodeDiameter, walkableMask, QueryTriggerInteraction.UseGlobal)) { // if the raycast hits something with a walkable layer
                             walkableRegionsDictionary.TryGetValue(hit.collider.gameObject.layer, out movementPenalty); // get the movement penalty of the layer the node is on
-                        }else {
+                        }
+                        else {
                             walkable = false; // if the raycast does not hit anything with a walkable layer the node is not walkable
+                        }
+
+                        if (obstacles.Length > 0) {
+                            walkable = false;
                         }
 
                         if (!walkable) { // if the node is not walkable
@@ -129,7 +133,7 @@ namespace AStar{
                 for (int z = 0; z < gridSizeZ; z++) { // Looping through the Z Grid size
                     for (int x = -kernelExtents; x <= kernelExtents; x++) { // Looping through the entire extent of the blur range
                         int sampleX = Mathf.Clamp(x, 0, kernelExtents); // Clamping the sample X to the kernel extents
-                        penaltiesHorizontalPass[0, z] += grid[sampleX, 0, z].movementPenalty; // Adding the penalty from the associated node in the grid 
+                        penaltiesHorizontalPass[0, z] += grid[sampleX, y, z].movementPenalty; // Adding the penalty from the associated node in the grid 
                     }
 
                     for (int x = 1; x < gridSizeX; x++) {
@@ -138,7 +142,7 @@ namespace AStar{
                         int addIndex = Mathf.Clamp(x + kernelExtents, 0, gridSizeX - 1); // Adding the right most node from the blur
                         //Debug.Log("addIndex " + addIndex);
 
-                        penaltiesHorizontalPass[x, z] = penaltiesHorizontalPass[x - 1, z] - grid[removeIndex, 0, z].movementPenalty + grid[addIndex, 0, z].movementPenalty; // Calculating the new penalty for the node
+                        penaltiesHorizontalPass[x, z] = penaltiesHorizontalPass[x - 1, z] - grid[removeIndex, y, z].movementPenalty + grid[addIndex, y, z].movementPenalty; // Calculating the new penalty for the node
                     }
                 }
 
@@ -150,7 +154,7 @@ namespace AStar{
                     }
 
                     int blurredPenalty = Mathf.RoundToInt((float)penaltiesDepthPass[x, 0] / (kernelSize * kernelSize));
-                    grid[x, 0, 0].movementPenalty = blurredPenalty;
+                    grid[x, y, 0].movementPenalty = blurredPenalty;
 
                     for (int z = 1; z < gridSizeZ; z++) {
                         int removeIndex = Mathf.Clamp(z - kernelExtents - 1, 0, gridSizeZ);
@@ -158,7 +162,7 @@ namespace AStar{
 
                         penaltiesDepthPass[x, z] = penaltiesDepthPass[x, z - 1] - penaltiesHorizontalPass[x, removeIndex] + penaltiesHorizontalPass[x, addIndex];
                         blurredPenalty = Mathf.RoundToInt((float)penaltiesDepthPass[x, z] / (kernelSize * kernelSize));
-                        grid[x, 0, z].movementPenalty = blurredPenalty;
+                        grid[x, y, z].movementPenalty = blurredPenalty;
 
                         if (blurredPenalty > penaltyMin) {
                             penaltyMin = blurredPenalty;
@@ -179,8 +183,8 @@ namespace AStar{
         public List<Node> GetNeighbours(Node node) {
             List<Node> neighbours = new List<Node>();
 
-            for (int x = -1; x <= 1; x++) {
-                for (int y = -1; y <= 1; y++) {
+            for (int y = -1; y <= 1; y++) {
+                for (int x = -1; x <= 1; x++) {
                     for (int z = -1; z <= 1; z++) {
                         if (x == 0 && y == 0 && z == 0) {
                             continue;
