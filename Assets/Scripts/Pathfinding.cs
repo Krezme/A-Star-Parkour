@@ -68,6 +68,7 @@ namespace AStar {
             else {
                 Debug.Log("Start or End node is not walkable!: " + startNode.walkable + " " + targetNode.walkable);
             }
+
             if (pathSuccess) {
                 waypoints = RetracePath(startNode, targetNode);
                 pathSuccess = waypoints.Length > 0;
@@ -75,6 +76,7 @@ namespace AStar {
             else {
                 Debug.Log("Path not found!");
             }
+
             callback(new PathResult(waypoints, pathSuccess, request.callback));
         }
 
@@ -98,9 +100,19 @@ namespace AStar {
                 path.Add(currentNode);
                 currentNode = currentNode.parent;
             }
-            Vector3[] waypoints = SimplifyPath(path);
+            Vector3[] waypoints = PathToWorldPoints(path);
             Array.Reverse(waypoints);
             return waypoints;
+        }
+
+        Vector3[] PathToWorldPoints(List<Node> path) {
+            List<Vector3> waypoints = new List<Vector3>();
+            Vector2 directionOld = Vector2.zero;
+
+            for (int i = 1; i < path.Count; i++) {
+                waypoints.Add(path[i].worldPosition);
+            }
+            return waypoints.ToArray();
         }
 
         Vector3[] SimplifyPath(List<Node> path) {
