@@ -12,6 +12,8 @@ namespace AStar {
 
         public PhysicsAIController physicsAIController;
 
+        public Animator animator;
+
         Path path;
 
         void Start() {
@@ -87,7 +89,8 @@ namespace AStar {
                     Debug.Log((Vector3.Distance(new Vector3 (0, path.lookPoints[pathIndex].y, 0), new Vector3 (0, transform.position.y, 0)) >= physicsAIController.jumpThreshold) + " jeje") ;
                     physicsAIController.jump = Vector3.Distance(new Vector3 (0, path.lookPoints[pathIndex].y, 0), new Vector3 (0, transform.position.y, 0)) >= physicsAIController.jumpThreshold && physicsAIController.isGrounded;
                     //transform.Translate(Vector3.forward * Time.deltaTime * speed * speedPercent, Space.Self);
-                    physicsAIController.Move(new Vector3(transform.forward.x, transform.forward.y, transform.forward.z) * Time.deltaTime * physicsAIController.stats.speed * speedPercent);
+                    //physicsAIController.Move(new Vector3(transform.forward.x, transform.forward.y, transform.forward.z) * Time.deltaTime * physicsAIController.stats.speed * speedPercent);
+                    animator.SetFloat("Speed", physicsAIController.stats.speed * speedPercent);
                 }
                 yield return null;
             }
