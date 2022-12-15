@@ -10,11 +10,7 @@ namespace AStar {
 
         public Transform target;
 
-        public float speed = 5;
-        public float turnSpeed = 3;
-        public float turnDst = 5;
-        public float stoppingDst = 10;
-        public CharacterController controller;
+        public PhysicsAIController physicsAIController;
 
         Path path;
 
@@ -25,7 +21,7 @@ namespace AStar {
         public void OnPathFound(Vector3[] waypoints, bool pathSuccessful){
             if (pathSuccessful)
             {
-                path = new Path(waypoints, transform.position, turnDst, stoppingDst);
+                path = new Path(waypoints, transform.position, physicsAIController.stats.turnDst, physicsAIController.stats.stoppingDst);
                 StopCoroutine("FollowPath");
                 StartCoroutine("FollowPath");
             }
@@ -79,18 +75,19 @@ namespace AStar {
                 if (followingPath) {
 
                     // Calculates the speed percentage based on the distance to the target
-                    if (pathIndex >= path.slowDownIndex && stoppingDst > 0) {
-                        speedPercent = Mathf.Clamp01(path.turnBoundaries[path.finishLineIndex].DistanceFromPoint(pos3D) / stoppingDst);
+                    if (pathIndex >= path.slowDownIndex && physicsAIController.stats.stoppingDst > 0) {
+                        speedPercent = Mathf.Clamp01(path.turnBoundaries[path.finishLineIndex].DistanceFromPoint(pos3D) / physicsAIController.stats.stoppingDst);
                         if (speedPercent < 0.01f) {
                             followingPath = false;
                         }
                     }
 
                     // Moves and Rotates the AI
-                    Quaternion targetRotation = Quaternion.LookRotation(new Vector3((path.lookPoints[pathIndex] - transform.position).x, 0, (path.lookPoints[pathIndex] - transform.position).z));
-                    transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * turnSpeed);
+                    physicsAIController.RotatePlayer(new Vector3((path.lookPoints[pathIndex] - transform.position).x, 0, (path.lookPoints[pathIndex] - transform.position).z));
+                    Debug.Log((Vector3.Distance(new Vector3 (0, path.lookPoints[pathIndex].y, 0), new Vector3 (0, transform.position.y, 0)) >= physicsAIController.jumpThreshold) + " jeje") ;
+                    physicsAIController.jump = Vector3.Distance(new Vector3 (0, path.lookPoints[pathIndex].y, 0), new Vector3 (0, transform.position.y, 0)) >= physicsAIController.jumpThreshold && physicsAIController.isGrounded;
                     //transform.Translate(Vector3.forward * Time.deltaTime * speed * speedPercent, Space.Self);
-                    controller.Move(new Vector3(transform.forward.x, transform.forward.y, transform.forward.z) * Time.deltaTime * speed * speedPercent);
+                    physicsAIController.Move(new Vector3(transform.forward.x, transform.forward.y, transform.forward.z) * Time.deltaTime * physicsAIController.stats.speed * speedPercent);
                 }
                 yield return null;
             }
