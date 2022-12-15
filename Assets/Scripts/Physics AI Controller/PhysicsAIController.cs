@@ -4,6 +4,7 @@ using UnityEngine;
 
 [System.Serializable]
 public class PhysicsStatistics {
+    [Range(0, 6)]
     public float speed = 6;
     public float turnSpeed = 3;
     public float turnDst = 5;

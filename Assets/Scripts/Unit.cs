@@ -79,6 +79,7 @@ namespace AStar {
                     // Calculates the speed percentage based on the distance to the target
                     if (pathIndex >= path.slowDownIndex && physicsAIController.stats.stoppingDst > 0) {
                         speedPercent = Mathf.Clamp01(path.turnBoundaries[path.finishLineIndex].DistanceFromPoint(pos3D) / physicsAIController.stats.stoppingDst);
+                        Debug.Log(path.turnBoundaries[path.finishLineIndex].DistanceFromPoint(pos3D) / physicsAIController.stats.stoppingDst);
                         if (speedPercent < 0.01f) {
                             followingPath = false;
                         }
@@ -86,13 +87,16 @@ namespace AStar {
 
                     // Moves and Rotates the AI
                     physicsAIController.RotatePlayer(new Vector3((path.lookPoints[pathIndex] - transform.position).x, 0, (path.lookPoints[pathIndex] - transform.position).z));
-                    Debug.Log((Vector3.Distance(new Vector3 (0, path.lookPoints[pathIndex].y, 0), new Vector3 (0, transform.position.y, 0)) >= physicsAIController.jumpThreshold) + " jeje") ;
-                    physicsAIController.jump = Vector3.Distance(new Vector3 (0, path.lookPoints[pathIndex].y, 0), new Vector3 (0, transform.position.y, 0)) >= physicsAIController.jumpThreshold && physicsAIController.isGrounded;
+                    //Debug.Log((Vector3.Distance(new Vector3 (0, path.lookPoints[pathIndex].y, 0), new Vector3 (0, transform.position.y, 0)) >= physicsAIController.jumpThreshold) + " jeje") ;
+                    //physicsAIController.jump = Vector3.Distance(new Vector3 (0, path.lookPoints[pathIndex].y, 0), new Vector3 (0, transform.position.y, 0)) >= physicsAIController.jumpThreshold && physicsAIController.isGrounded;
                     //transform.Translate(Vector3.forward * Time.deltaTime * speed * speedPercent, Space.Self);
                     //physicsAIController.Move(new Vector3(transform.forward.x, transform.forward.y, transform.forward.z) * Time.deltaTime * physicsAIController.stats.speed * speedPercent);
                     animator.SetFloat("Speed", physicsAIController.stats.speed * speedPercent);
                 }
                 yield return null;
+            }
+            if (!followingPath) {
+                animator.SetFloat("Speed", 0);
             }
         }
 

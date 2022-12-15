@@ -68,7 +68,7 @@ namespace AStar {
             float intersectX = (z_interceptPerpendicular - z_intercept) / (gradient - gradientPerpendicular);
             float intersectZ = gradient * intersectX + z_intercept;
 
-            return Vector3.Distance(p, new Vector3(intersectX, 0, intersectZ));
+            return Vector3.Distance(p, new Vector3(intersectX, p.y, intersectZ)); //! This "p.y" is a place holder. It will cause issues down the line if it is not changed. Please Change it!!!
         }
 
         public void DrawWithGizmos(float length){
