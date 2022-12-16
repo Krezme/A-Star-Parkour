@@ -14,6 +14,8 @@ namespace AStar {
 
         public Animator animator;
 
+        public bool displayPathGizmos = true;
+
         Path path;
 
         void Start() {
@@ -101,9 +103,11 @@ namespace AStar {
         }
 
         public void OnDrawGizmos() {
-            if (path != null)
-            {
-                path.DrawWithGizmos();
+            if (displayPathGizmos) {
+                if (path != null)
+                {
+                    path.DrawWithGizmos();
+                }
             }
         }
     }
