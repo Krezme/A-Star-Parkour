@@ -12,6 +12,21 @@ public class PhysicsStatistics {
     public float jumpHeight = 2;
 }
 
+[System.Serializable]
+public class RaycastStatistics {
+    public string name;
+    public float rayLength;
+    public float relativeOffsetLength;
+    public Vector3 offset;
+    public LayerMask mask;
+    public Directions relativeDirection;
+    public Directions relativeOffset;
+    public bool showRaycast;
+
+    [HideInInspector]
+    public bool triggered;
+}
+
 public class PhysicsAIController : MonoBehaviour
 {
     public PhysicsStatistics stats;
@@ -26,13 +41,19 @@ public class PhysicsAIController : MonoBehaviour
     public float terminalVelocity;
     public float gravity = -9.81f;
 
+    public RaycastStatistics[] checkRaycast;
+
     [HideInInspector]
     public bool jump;
     [HideInInspector]
     public bool isGrounded;
 
+    public Dictionary<Directions, Vector3> raycastDirections = new Dictionary<Directions, Vector3>();
+
     void Update () {
+        RaycastDirections();
         JumpAndGravity(jump);
+        RayCasts();
         GroundedCheck();
         jump = false;
     }
@@ -86,11 +107,68 @@ public class PhysicsAIController : MonoBehaviour
         controller.Move(motion + new Vector3(0, verticalVelocity, 0) * Time.deltaTime);
     }
 
+    public void RayCasts() {
+
+    }
+
+    
+
+    private void RaycastDirections () {
+        raycastDirections = new Dictionary<Directions, Vector3>(){
+            {Directions.None, Vector3.zero},
+            {Directions.Forward, transform.forward},
+            {Directions.Backward, -transform.forward},
+            {Directions.Right, transform.right},
+            {Directions.Left, -transform.right},
+            {Directions.Up, transform.up},
+            {Directions.Down, -transform.up}
+        };
+
+        foreach (RaycastStatistics raycast in checkRaycast) {
+            ShootRaycast(raycast);
+        }
+    }
+
+    public void ShootRaycast(RaycastStatistics raycast) {
+        Ray ray = new Ray(transform.position + raycast.offset + (raycastDirections[raycast.relativeOffset] * raycast.relativeOffsetLength), raycastDirections[raycast.relativeDirection]);
+        RaycastHit hit;
+        raycast.triggered = false;
+        if (Physics.Raycast(ray, out hit, raycast.rayLength, raycast.mask)) {
+            raycast.triggered = true;
+        }
+        /* if (raycast.showRaycast) {
+            Debug.Log("Hello Raycasts");
+            Debug.DrawRay(transform.position + raycast.offset, raycastDirections[raycast.relativeDirection] * raycast.rayLength, raycast.triggered ? Color.green : Color.red);
+        } */
+    }
+
     public void OnDrawGizmos() {
         // set sphere position, with offset
         Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - groundedOffset, transform.position.z);
         // draw sphere
         Gizmos.color = isGrounded ? Color.green : Color.red;
         Gizmos.DrawWireSphere(spherePosition, groundCheckSphereRadius);
+
+        foreach (RaycastStatistics raycast in checkRaycast) {
+            if (raycast.showRaycast) {
+                Ray ray = new Ray(transform.position + raycast.offset + (raycastDirections[raycast.relativeOffset] * raycast.relativeOffsetLength), raycastDirections[raycast.relativeDirection]);
+                Gizmos.color = raycast.triggered ? Color.green : Color.red;
+                Gizmos.DrawLine(ray.origin, ray.origin + ray.direction * raycast.rayLength);
+            }
+        }
     }
+
+    void OnValidate() {
+        RaycastDirections();
+    }
+}
+
+public enum Directions {
+    None,
+    Forward,
+    Backward,
+    Right,
+    Left,
+    Up,
+    Down
 }
