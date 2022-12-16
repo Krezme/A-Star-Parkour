@@ -48,6 +48,8 @@ public class PhysicsAIController : MonoBehaviour
     public bool jump;
     [HideInInspector]
     public bool isGrounded;
+    [HideInInspector]
+    public bool isPlayingParkourAnimation = false;
 
     public Dictionary<Directions, Vector3> raycastDirections = new Dictionary<Directions, Vector3>();
 
@@ -73,7 +75,6 @@ public class PhysicsAIController : MonoBehaviour
             {
                 // the square root of H * -2 * G = how much velocity needed to reach desired height
                 verticalVelocity = Mathf.Sqrt(stats.jumpHeight * -2f * gravity);
-
             }
 
         }
@@ -131,20 +132,21 @@ public class PhysicsAIController : MonoBehaviour
         if (Physics.Raycast(ray, out hit, raycast.rayLength, raycast.mask)) {
             raycast.triggered = true;
         }
-        /* if (raycast.showRaycast) {
-            Debug.Log("Hello Raycasts");
-            Debug.DrawRay(transform.position + raycast.offset, raycastDirections[raycast.relativeDirection] * raycast.rayLength, raycast.triggered ? Color.green : Color.red);
-        } */
     }
 
-    public void PlayParkourAnimation() {
-        if (checkRaycast[4].triggered && checkRaycast[5].triggered) {
-            animator.SetBool("ClimbHigh", true);
-        }
-        else if (checkRaycast[0].triggered && checkRaycast[1].triggered && checkRaycast[5].triggered) {
-            animator.SetBool("SlightJump", true);
-        }
+    
 
+    public void PlayParkourAnimation() {
+        if (!isPlayingParkourAnimation) {
+            if (checkRaycast[4].triggered && checkRaycast[5].triggered) {
+                isPlayingParkourAnimation = true;
+                animator.SetBool("ClimbHigh", true);
+            }
+            else if (checkRaycast[0].triggered && checkRaycast[1].triggered && checkRaycast[5].triggered) {
+                isPlayingParkourAnimation = true;
+                animator.SetBool("SlightJump", true);
+            }
+        }
     }
 
     public void OnDrawGizmos() {

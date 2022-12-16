@@ -567,7 +567,7 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.16187063
+      - time: 0.9176547
         functionName: EndClimbHigh
         data: 
         objectReferenceParameter: {instanceID: 0}
