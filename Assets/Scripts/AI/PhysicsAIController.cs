@@ -138,9 +138,13 @@ public class PhysicsAIController : MonoBehaviour
     }
 
     public void PlayParkourAnimation() {
-        if (checkRaycast[0].triggered && checkRaycast[1].triggered && checkRaycast[checkRaycast.Length-1].triggered) {
+        if (checkRaycast[4].triggered && checkRaycast[5].triggered) {
+            animator.SetBool("ClimbHigh", true);
+        }
+        else if (checkRaycast[0].triggered && checkRaycast[1].triggered && checkRaycast[5].triggered) {
             animator.SetBool("SlightJump", true);
         }
+
     }
 
     public void OnDrawGizmos() {

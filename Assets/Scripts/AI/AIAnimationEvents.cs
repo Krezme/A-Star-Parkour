@@ -9,4 +9,8 @@ public class AIAnimationEvents : MonoBehaviour
     public void EndSlightJump() {
         animator.SetBool("SlightJump", false);
     }
+
+    public void EndClimbHigh() {
+        animator.SetBool("ClimbHigh", false);
+    }
 }
