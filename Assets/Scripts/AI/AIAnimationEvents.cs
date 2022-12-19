@@ -16,4 +16,14 @@ public class AIAnimationEvents : MonoBehaviour
         animator.SetBool("ClimbHigh", false);
         physicsAIController.isPlayingParkourAnimation = false;
     }
+
+    public void EndClimbMedPlus() {
+        animator.SetBool("ClimbMed+", false);
+        physicsAIController.isPlayingParkourAnimation = false;
+    }
+
+    public void EndClimbMed() {
+        animator.SetBool("ClimbMed", false);
+        physicsAIController.isPlayingParkourAnimation = false;
+    }
 }

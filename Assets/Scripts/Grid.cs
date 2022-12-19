@@ -84,31 +84,34 @@ namespace AStar{
                     for (int z = 0; z < gridSizeZ; z++) { //loop through the grid on the z axis
                         Vector3 worldPoint = worldBottomLeft + (Vector3.right * (x * nodeDiameter + nodeRadius)) + (Vector3.up * (y * nodeDiameter + nodeRadius)) + (Vector3.forward * (z * nodeDiameter + nodeRadius)); //get the world position of the next node depending on which node the loops are on and the additional node specifications
                         bool walkable = true;
-                        //walkable = !(Physics.CheckSphere(worldPoint, nodeRadius, unwalkableMask)); // Checking if there is obstacle inside of the node it will return true if there is no obstacle
+                        
+                        bool isAir = true; // Default value for the node is air. If the node is actually air it will stay true, but it will be calculated below
 
                         int movementPenalty = 0; // The movement penalty of the node
 
                         //raycast to check if the node is on a walkable layer and which walkable layer it is on
                         Ray ray = new Ray(worldPoint + Vector3.up * 0.1f, Vector3.down); // position of the raycast is the center of the node and the direction is down
                         RaycastHit hit; // the hit information of the raycast
-                        Collider[] obstacles = Physics.OverlapSphere(worldPoint, nodeRadius/5, walkableMask); // Checking if there is obstacle inside of the node it will return true if there is no obstacle
+                        Collider[] obstacles = Physics.OverlapSphere(worldPoint, nodeRadius * 0.2f, walkableMask); // Checking if there is obstacle inside of the node it will return true if there is no obstacle
                         if (Physics.Raycast(ray, out hit, nodeDiameter, walkableMask, QueryTriggerInteraction.UseGlobal)) { // if the raycast hits something with a walkable layer
                             walkableRegionsDictionary.TryGetValue(hit.collider.gameObject.layer, out movementPenalty); // get the movement penalty of the layer the node is on
+                            isAir = false; // raycast has hit something with a walkable layer the node is not air
                         }
                         else {
                             walkable = false; // if the raycast does not hit anything with a walkable layer the node is not walkable
+                            isAir = true; // raycast has not hit anything with a walkable layer the node is air
                         }
 
-                        if (obstacles.Length > 0) {
+                        if (obstacles.Length > 0) { // There is Obstacle inside of the node
                             walkable = false;
+                            isAir = false;
                         }
 
                         if (!walkable) { // if the node is not walkable
                             movementPenalty += obstacleProximityPenalty; // add the obstacle proximity penalty to the movement penalty
                         }
 
-                        grid[x, y, z] = new Node(walkable, worldPoint, x, y, z, movementPenalty); // create a new node in the grid and record all the information about it
-                        
+                        grid[x, y, z] = new Node(walkable, isAir, worldPoint, x, y, z, movementPenalty); // create a new node in the grid and record all the information about it
                     }
                 }
             }
@@ -212,7 +215,7 @@ namespace AStar{
         public Node NodeFromWorldPoint (Vector3 worldPosition) {
             
             float percentX = (worldPosition.x + gridWorldSize.x / 2) / gridWorldSize.x;
-            float percentY = gridWorldSize.y > 1 ? ((worldPosition.y - gridWorldSize.y/2) + gridWorldSize.y / 2) / gridWorldSize.y : 1;
+            float percentY = gridWorldSize.y > 1 ? ((worldPosition.y - gridWorldSize.y / 2) + gridWorldSize.y / 2) / gridWorldSize.y : 1;
             float percentZ = (worldPosition.z + gridWorldSize.z / 2) / gridWorldSize.z;
             percentX = Mathf.Clamp01(percentX);
             percentY = Mathf.Clamp01(percentY);
@@ -235,8 +238,10 @@ namespace AStar{
                     foreach (Node n in grid) {
 
                         Gizmos.color = Color.Lerp(Color.white, Color.black, Mathf.InverseLerp(penaltyMax, penaltyMin, n.movementPenalty));
-                        if (n.walkable) {
+                        if (n.walkable /* || n.isAir */) {
                             Gizmos.color = (n.walkable) ? Gizmos.color : Color.red;
+                            Gizmos.color = (n.isAir) ? Color.cyan : Gizmos.color;
+                            Gizmos.color = new Color(Gizmos.color.r, Gizmos.color.g, Gizmos.color.b, 1f);
                             Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter - gizmosGridGap));
                         }
                     }

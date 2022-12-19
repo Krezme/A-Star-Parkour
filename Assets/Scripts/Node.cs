@@ -7,6 +7,8 @@ namespace AStar{
     {
         // Is the node walkable?
         public bool walkable;
+        // Is the node air?
+        public bool isAir;
 
         // Position of the node in the world
         public Vector3 worldPosition;
@@ -36,8 +38,9 @@ namespace AStar{
         /// <param name="_gridX"> Grid position on the X axis</param>
         /// <param name="_gridZ"> Grid position on the Y axis</param>
         /// <param name="_penalty"> Movement penalty</param>
-        public Node(bool _walkable, Vector3 _worldPos, int _gridX, int _gridY, int _gridZ, int _penalty) {
+        public Node(bool _walkable, bool _isAir, Vector3 _worldPos, int _gridX, int _gridY, int _gridZ, int _penalty) {
             walkable = _walkable;
+            isAir = _isAir;
             worldPosition = _worldPos;
             gridX = _gridX;
             gridY = _gridY;

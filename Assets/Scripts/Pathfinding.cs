@@ -8,6 +8,8 @@ namespace AStar {
     {
         public static Pathfinding instance;
 
+        public int jumpHeight;
+
         Grid grid;
 
         void Awake() {
@@ -36,7 +38,7 @@ namespace AStar {
                 HashSet<Node> closedSet = new HashSet<Node>();
 
                 openSet.Add(startNode);
-
+                int currentJumpHeight = 0;
                 while(openSet.Count > 0) {
                     Node currentNode = openSet.RemoveFirst();
                     closedSet.Add(currentNode);
@@ -47,13 +49,26 @@ namespace AStar {
                         break;
                     }
 
+                    if (!currentNode.isAir && currentNode.walkable) {
+                        currentJumpHeight = 0;
+                    }
+                    
                     foreach (Node neighbour in Grid.instance.GetNeighbours(currentNode)) {
-                        if (!neighbour.walkable || closedSet.Contains(neighbour)) {
+                        if ((!neighbour.walkable && !neighbour.isAir) || closedSet.Contains(neighbour)) {
+                            continue;
+                        }
+
+                        if (currentJumpHeight == jumpHeight && (!neighbour.walkable && neighbour.isAir)) {
                             continue;
                         }
 
                         int newMovementCostToNeighbour = currentNode.gCost + GetDistance(currentNode, neighbour) + neighbour.movementPenalty;
                         if (newMovementCostToNeighbour < neighbour.gCost || !openSet.Contains(neighbour)) {
+
+                            if (neighbour.isAir && !neighbour.walkable) {
+                                currentJumpHeight++;
+                            }
+
                             neighbour.gCost = newMovementCostToNeighbour;
                             neighbour.hCost = GetDistance(neighbour, targetNode);
                             neighbour.parent = currentNode;

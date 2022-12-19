@@ -31,7 +31,6 @@ namespace AStar {
             }
         }
 
-
         /// <summary>
         /// Updates the path if the target pos has changed
         /// </summary>
@@ -81,7 +80,6 @@ namespace AStar {
                     // Calculates the speed percentage based on the distance to the target
                     if (pathIndex >= path.slowDownIndex && physicsAIController.stats.stoppingDst > 0) {
                         speedPercent = Mathf.Clamp01(path.turnBoundaries[path.finishLineIndex].DistanceFromPoint(pos3D) / physicsAIController.stats.stoppingDst);
-                        Debug.Log(path.turnBoundaries[path.finishLineIndex].DistanceFromPoint(pos3D) / physicsAIController.stats.stoppingDst);
                         if (speedPercent < 0.01f) {
                             followingPath = false;
                         }
