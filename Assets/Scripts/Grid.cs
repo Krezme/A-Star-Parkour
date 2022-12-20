@@ -109,9 +109,9 @@ namespace AStar{
                             isAir = false;
                         }
 
-                        if (isAir) {
+                        /* if (isAir) {
                             movementPenalty += airPenalty;
-                        }
+                        } */
 
                         if (!walkable) { // if the node is not walkable
                             movementPenalty += obstacleProximityPenalty; // add the obstacle proximity penalty to the movement penalty

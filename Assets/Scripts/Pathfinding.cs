@@ -51,6 +51,7 @@ namespace AStar {
 
                     if (!currentNode.isAir && currentNode.walkable) {
                         currentJumpHeight = 0;
+                        //Debug.Log("currentJumpHeight1: " + currentJumpHeight);
                     }
                     
                     foreach (Node neighbour in Grid.instance.GetNeighbours(currentNode)) {
@@ -58,15 +59,21 @@ namespace AStar {
                             continue;
                         }
 
-                        if (currentJumpHeight == jumpHeight && (!neighbour.walkable && neighbour.isAir)) {
+                        if (currentJumpHeight == jumpHeight && (!neighbour.walkable && neighbour.isAir && neighbour.gridY >= currentNode.gridY)) {
                             continue;
                         }
 
                         int newMovementCostToNeighbour = currentNode.gCost + GetDistance(currentNode, neighbour) + neighbour.movementPenalty;
                         if (newMovementCostToNeighbour < neighbour.gCost || !openSet.Contains(neighbour)) {
 
-                            if (neighbour.isAir && !neighbour.walkable) {
-                                currentJumpHeight++;
+                            if (neighbour.isAir) {
+                                if (neighbour.gridY <= currentNode.gridY) {
+                                    //Debug.Log("where: " + new Vector3(neighbour.gridX, neighbour.gridY, neighbour.gridZ) + " " + new Vector3(currentNode.gridX, currentNode.gridY, currentNode.gridZ));
+                                }
+                                else {
+                                    currentJumpHeight++;
+                                    //Debug.Log("currentJumpHeight: " + currentJumpHeight);
+                                }
                             }
 
                             neighbour.gCost = newMovementCostToNeighbour;

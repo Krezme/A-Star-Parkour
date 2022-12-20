@@ -134,8 +134,6 @@ public class PhysicsAIController : MonoBehaviour
         }
     }
 
-    
-
     public void PlayParkourAnimation() {
         if (!isPlayingParkourAnimation) {
             if (checkRaycast[4].triggered && checkRaycast[5].triggered && isGrounded) {
