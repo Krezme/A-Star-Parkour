@@ -33,6 +33,7 @@ namespace AStar{
 
         [Tooltip("Should the grid be displayed in the scene view?")]
         public bool displayGridGizmos;
+        public bool displayOnlyGroundGridGizmos;
         [Tooltip("Layers that the enemy cannot walk on")]
         public LayerMask unwalkableMask;
         public Vector3 gridWorldSize;
@@ -42,6 +43,7 @@ namespace AStar{
         public TerrainType[] walkableRegions;
         [Tooltip("The Penalty for moving close to Obstacles")]
         public int obstacleProximityPenalty = 10;
+        public int airPenalty = 30;
         [Tooltip("Leaving gaps between the drawn gizmo grid squares (Does not effect the actual grid)")]
         public float gizmosGridGap = 0.1f;
 
@@ -107,6 +109,10 @@ namespace AStar{
                             isAir = false;
                         }
 
+                        if (isAir) {
+                            movementPenalty += airPenalty;
+                        }
+
                         if (!walkable) { // if the node is not walkable
                             movementPenalty += obstacleProximityPenalty; // add the obstacle proximity penalty to the movement penalty
                         }
@@ -135,8 +141,10 @@ namespace AStar{
 
                 for (int z = 0; z < gridSizeZ; z++) { // Looping through the Z Grid size
                     for (int x = -kernelExtents; x <= kernelExtents; x++) { // Looping through the entire extent of the blur range
+                        
                         int sampleX = Mathf.Clamp(x, 0, kernelExtents); // Clamping the sample X to the kernel extents
-                        penaltiesHorizontalPass[0, z] += grid[sampleX, y, z].movementPenalty; // Adding the penalty from the associated node in the grid 
+                    
+                        penaltiesHorizontalPass[0, z] += grid[sampleX, y, z].movementPenalty; // Adding the penalty from the associated node in the grid
                     }
 
                     for (int x = 1; x < gridSizeX; x++) {
@@ -238,10 +246,17 @@ namespace AStar{
                     foreach (Node n in grid) {
 
                         Gizmos.color = Color.Lerp(Color.white, Color.black, Mathf.InverseLerp(penaltyMax, penaltyMin, n.movementPenalty));
-                        if (n.walkable /* || n.isAir */) {
-                            Gizmos.color = (n.walkable) ? Gizmos.color : Color.red;
-                            Gizmos.color = (n.isAir) ? Color.cyan : Gizmos.color;
-                            Gizmos.color = new Color(Gizmos.color.r, Gizmos.color.g, Gizmos.color.b, 1f);
+                        Gizmos.color = (n.walkable) ? Gizmos.color : Color.red;
+                        Gizmos.color = (n.isAir) ? Color.cyan : Gizmos.color;
+                        Gizmos.color = new Color(Gizmos.color.r, Gizmos.color.g, Gizmos.color.b, 1f);
+                        Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter - gizmosGridGap));
+                    }
+                }
+                else if (grid != null && displayOnlyGroundGridGizmos) {
+                    foreach (Node n in grid) {
+
+                        Gizmos.color = Color.Lerp(Color.white, Color.black, Mathf.InverseLerp(penaltyMax, penaltyMin, n.movementPenalty));
+                        if (n.walkable) {
                             Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter - gizmosGridGap));
                         }
                     }
