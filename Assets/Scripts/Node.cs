@@ -29,6 +29,7 @@ namespace AStar{
         public int hCost;
         // The parent node (The previous node that was used to reach this node)
         public Node parent;
+        public int currentVerticalAirTime;
         // The index of the node in the heap
         int heapIndex;
 

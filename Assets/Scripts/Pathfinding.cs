@@ -38,7 +38,8 @@ namespace AStar {
                 HashSet<Node> closedSet = new HashSet<Node>();
 
                 openSet.Add(startNode);
-                int currentJumpHeight = 0;
+                startNode.currentVerticalAirTime = 0;
+                
                 while(openSet.Count > 0) {
                     Node currentNode = openSet.RemoveFirst();
                     closedSet.Add(currentNode);
@@ -49,8 +50,17 @@ namespace AStar {
                         break;
                     }
 
+                    if (currentNode.isAir) {
+                        if (currentNode.gridY < currentNode.parent.gridY) {
+                            currentNode.currentVerticalAirTime = currentNode.parent.currentVerticalAirTime;
+                        }
+                        else {
+                            currentNode.currentVerticalAirTime = currentNode.parent.currentVerticalAirTime + 1;
+                        }
+                    }
+
                     if (!currentNode.isAir && currentNode.walkable) {
-                        currentJumpHeight = 0;
+                        currentNode.currentVerticalAirTime = 0;
                         //Debug.Log("currentJumpHeight1: " + currentJumpHeight);
                     }
                     
@@ -59,19 +69,12 @@ namespace AStar {
                             continue;
                         }
 
-                        if (currentJumpHeight == jumpHeight && (!neighbour.walkable && neighbour.isAir && neighbour.gridY >= currentNode.gridY)) {
+                        if (currentNode.currentVerticalAirTime == jumpHeight -1 && (!neighbour.walkable && neighbour.isAir && neighbour.gridY >= currentNode.gridY)) {
                             continue;
                         }
 
                         int newMovementCostToNeighbour = currentNode.gCost + GetDistance(currentNode, neighbour) + neighbour.movementPenalty;
                         if (newMovementCostToNeighbour < neighbour.gCost || !openSet.Contains(neighbour)) {
-
-                            if (neighbour.isAir) {
-                                if (neighbour.gridY <= currentNode.gridY) {}
-                                else {
-                                    currentJumpHeight++;
-                                }
-                            }
 
                             neighbour.gCost = newMovementCostToNeighbour;
                             neighbour.hCost = GetDistance(neighbour, targetNode);
