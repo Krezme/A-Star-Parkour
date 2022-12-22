@@ -67,12 +67,9 @@ namespace AStar {
                         if (newMovementCostToNeighbour < neighbour.gCost || !openSet.Contains(neighbour)) {
 
                             if (neighbour.isAir) {
-                                if (neighbour.gridY <= currentNode.gridY) {
-                                    //Debug.Log("where: " + new Vector3(neighbour.gridX, neighbour.gridY, neighbour.gridZ) + " " + new Vector3(currentNode.gridX, currentNode.gridY, currentNode.gridZ));
-                                }
+                                if (neighbour.gridY <= currentNode.gridY) {}
                                 else {
                                     currentJumpHeight++;
-                                    //Debug.Log("currentJumpHeight: " + currentJumpHeight);
                                 }
                             }
 

@@ -10,6 +10,8 @@ namespace AStar{
         // Is the node air?
         public bool isAir;
 
+        public bool isOneUnitHeight;
+
         // Position of the node in the world
         public Vector3 worldPosition;
         // Position of the node in the grid on the X axis

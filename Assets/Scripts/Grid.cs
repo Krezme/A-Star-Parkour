@@ -107,6 +107,14 @@ namespace AStar{
                         if (obstacles.Length > 0) { // There is Obstacle inside of the node
                             walkable = false;
                             isAir = false;
+                            if (y > 0 && y < gridSizeY - 1) { // if the node is not on the bottom or top layer of the grid
+                                grid[x, y -1, z].isOneUnitHeight = true;
+                            }
+                        }
+                        else {
+                            if (y > 0 && y < gridSizeY - 1) { // if the node is not on the bottom or top layer of the grid
+                                grid[x, y -1, z].isOneUnitHeight = false;
+                            }
                         }
 
                         /* if (isAir) {
@@ -117,10 +125,14 @@ namespace AStar{
                             movementPenalty += obstacleProximityPenalty; // add the obstacle proximity penalty to the movement penalty
                         }
 
+                        
+
                         grid[x, y, z] = new Node(walkable, isAir, worldPoint, x, y, z, movementPenalty); // create a new node in the grid and record all the information about it
                     }
                 }
             }
+
+
 
             BlurPenaltyMap(3); // Blurring the surrounding 3 nodes of the obstacles
         }
