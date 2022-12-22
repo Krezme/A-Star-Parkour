@@ -53,6 +53,17 @@ public class PhysicsAIController : MonoBehaviour
 
     public Dictionary<Directions, Vector3> raycastDirections = new Dictionary<Directions, Vector3>();
 
+    public float slidingCCHeight; // Character Controller height when sliding
+    public Vector3 slidingCCCenter; // Character Controller center when sliding
+
+    private CharacterController defCharacterController;
+
+    private bool isSliding = false;
+
+    void Start () {
+        defCharacterController = controller;
+    }
+
     void Update () {
         RaycastDirections();
         PlayParkourAnimation();
@@ -148,7 +159,25 @@ public class PhysicsAIController : MonoBehaviour
                 isPlayingParkourAnimation = true;
                 animator.SetBool("SlightJump", true);
             }
+            else if (!checkRaycast[0].triggered && !checkRaycast[1].triggered && checkRaycast[4].triggered) {
+                isPlayingParkourAnimation = true;
+                controller.height = slidingCCHeight;
+                controller.center = slidingCCCenter;
+                isSliding = true;
+                animator.SetBool("Slide", true);
+            }
         }
+
+        if (isSliding) {
+            if (checkRaycast[6].triggered) {
+                animator.SetBool("Slide", false);
+            }
+        }
+    }
+
+    public void ReturnCCToDefault() {
+        controller = defCharacterController;
+        isSliding = false;
     }
 
     public void OnDrawGizmos() {

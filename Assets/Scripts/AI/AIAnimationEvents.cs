@@ -26,4 +26,9 @@ public class AIAnimationEvents : MonoBehaviour
         animator.SetBool("ClimbMed", false);
         physicsAIController.isPlayingParkourAnimation = false;
     }
+
+    public void EndSlide() {
+        physicsAIController.isPlayingParkourAnimation = false;
+        physicsAIController.ReturnCCToDefault();
+    }
 }
