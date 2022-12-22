@@ -269,6 +269,8 @@ namespace AStar{
 
                         Gizmos.color = Color.Lerp(Color.white, Color.black, Mathf.InverseLerp(penaltyMax, penaltyMin, n.movementPenalty));
                         if (n.walkable) {
+                            Gizmos.color = (n.isOneUnitHeight) ? Color.green : Gizmos.color;
+                            Debug.Log("n.isOneUnitHeight" + n.isOneUnitHeight);
                             Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter - gizmosGridGap));
                         }
                     }

@@ -29,7 +29,10 @@ namespace AStar{
         public int hCost;
         // The parent node (The previous node that was used to reach this node)
         public Node parent;
+        // The current vertical air time used for moving the AI trough air nodes
         public int currentVerticalAirTime;
+        // The current slide length used for moving the AI trough low spaces
+        public int currentSlideLength;
         // The index of the node in the heap
         int heapIndex;
 

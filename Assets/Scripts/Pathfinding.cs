@@ -9,6 +9,7 @@ namespace AStar {
         public static Pathfinding instance;
 
         public int jumpHeight;
+        public int slideLength;
 
         Grid grid;
 
@@ -50,6 +51,7 @@ namespace AStar {
                         break;
                     }
 
+                    //Condition for navigating through air Nodes
                     if (currentNode.isAir) {
                         if (currentNode.gridY < currentNode.parent.gridY) {
                             currentNode.currentVerticalAirTime = currentNode.parent.currentVerticalAirTime;
@@ -59,9 +61,24 @@ namespace AStar {
                         }
                     }
 
+                    //Condition for sliding down
+                    if (currentNode.isOneUnitHeight) {
+                        if (currentNode.parent != null) {
+                            if (currentNode.gridY == currentNode.parent.gridY) {
+                                currentNode.currentSlideLength = currentNode.parent.currentSlideLength + 1;
+                            }
+                            else {
+                                currentNode.currentSlideLength = jumpHeight + 1; //Setting to a value that is not allowed so it will not use it to slide 
+                            }
+                        }
+                    }
+
+                    //Resetting the air time when landed and slide when not on a isOneUnitHeight Node
                     if (!currentNode.isAir && currentNode.walkable) {
                         currentNode.currentVerticalAirTime = 0;
-                        //Debug.Log("currentJumpHeight1: " + currentJumpHeight);
+                        if (!currentNode.isOneUnitHeight) {
+                            currentNode.currentSlideLength = 0;
+                        }
                     }
                     
                     foreach (Node neighbour in Grid.instance.GetNeighbours(currentNode)) {
@@ -69,7 +86,12 @@ namespace AStar {
                             continue;
                         }
 
-                        if (currentNode.currentVerticalAirTime == jumpHeight -1 && (!neighbour.walkable && neighbour.isAir && neighbour.gridY >= currentNode.gridY)) {
+                        //Setting Node to not viable when it is using too much air time
+                        if (currentNode.currentVerticalAirTime == jumpHeight -1 && ((!neighbour.walkable && neighbour.isAir) && neighbour.gridY >= currentNode.gridY)) {//! Look into this condition and fix it
+                            continue;
+                        }
+
+                        if (currentNode.currentSlideLength == slideLength && (neighbour.isOneUnitHeight || neighbour.gridY > currentNode.gridY || !neighbour.walkable)) {
                             continue;
                         }
 
