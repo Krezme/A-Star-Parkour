@@ -236,13 +236,16 @@ namespace AStar{
             
             float percentX = (worldPosition.x + gridWorldSize.x / 2) / gridWorldSize.x;
             float percentY = gridWorldSize.y > 1 ? ((worldPosition.y - gridWorldSize.y / 2) + gridWorldSize.y / 2) / gridWorldSize.y : 1;
+            Debug.Log("worldPosition.y - gridWorldSize.y: " + (((worldPosition.y - gridWorldSize.y / 2) + gridWorldSize.y / 2) / gridWorldSize.y));
             float percentZ = (worldPosition.z + gridWorldSize.z / 2) / gridWorldSize.z;
             percentX = Mathf.Clamp01(percentX);
             percentY = Mathf.Clamp01(percentY);
+            Debug.Log("percentY: " + (percentY));
             percentZ = Mathf.Clamp01(percentZ);
 
             int x = Mathf.RoundToInt((gridSizeX - 1) * percentX);
-            int y = Mathf.RoundToInt((gridSizeY - 1) * percentY);
+            int y = Mathf.RoundToInt((gridSizeY) * percentY);
+            Debug.Log("y: " + (y));
             int z = Mathf.RoundToInt((gridSizeZ - 1) * percentZ);
 
             return grid[x, y, z];
