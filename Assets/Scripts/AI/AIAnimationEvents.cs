@@ -31,4 +31,9 @@ public class AIAnimationEvents : MonoBehaviour
         physicsAIController.isPlayingParkourAnimation = false;
         physicsAIController.ReturnCCToDefault();
     }
+
+    public void EndJumpGap() {
+        animator.SetBool("JumpGap", false);
+        physicsAIController.isPlayingParkourAnimation = false;
+    }
 }

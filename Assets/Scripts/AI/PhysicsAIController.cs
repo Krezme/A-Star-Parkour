@@ -145,9 +145,13 @@ public class PhysicsAIController : MonoBehaviour
         }
     }
 
-    public void PlayParkourAnimation() {
+    public void PlayParkourAnimation() { //? If there is time use Dictionary to replace all of these if statements
         if (!isPlayingParkourAnimation) {
-            if (checkRaycast[4].triggered && checkRaycast[5].triggered && isGrounded) {
+            if (!checkRaycast[7].triggered && isGrounded) {
+                isPlayingParkourAnimation = true;
+                animator.SetBool("JumpGap", true);
+            }
+            else if (checkRaycast[4].triggered && checkRaycast[5].triggered && isGrounded) {
                 isPlayingParkourAnimation = true;
                 animator.SetBool("ClimbHigh", true);
             }
@@ -159,7 +163,7 @@ public class PhysicsAIController : MonoBehaviour
                 isPlayingParkourAnimation = true;
                 animator.SetBool("SlightJump", true);
             }
-            else if (!checkRaycast[0].triggered && !checkRaycast[1].triggered && checkRaycast[4].triggered) {
+            else if (!checkRaycast[0].triggered && !checkRaycast[1].triggered && checkRaycast[4].triggered && isGrounded) {
                 isPlayingParkourAnimation = true;
                 controller.height = slidingCCHeight;
                 controller.center = slidingCCCenter;
