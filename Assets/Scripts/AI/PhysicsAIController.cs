@@ -147,7 +147,7 @@ public class PhysicsAIController : MonoBehaviour
 
     public void PlayParkourAnimation() { //? If there is time use Dictionary to replace all of these if statements
         if (!isPlayingParkourAnimation) {
-            if (!checkRaycast[7].triggered && isGrounded) {
+            if (!checkRaycast[7].triggered && (!checkRaycast[0].triggered && !checkRaycast[1].triggered && !checkRaycast[2].triggered && !checkRaycast[3].triggered && !checkRaycast[4].triggered && !checkRaycast[5].triggered && !checkRaycast[6].triggered) && isGrounded) {
                 isPlayingParkourAnimation = true;
                 animator.SetBool("JumpGap", true);
             }

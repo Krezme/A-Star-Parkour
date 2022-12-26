@@ -9,6 +9,8 @@ namespace AStar {
         public static Pathfinding instance;
 
         public int jumpHeight;
+
+        public int amountOfImmediateAirMovementPossible;
         public int slideLength;
 
         Grid grid;
@@ -40,6 +42,7 @@ namespace AStar {
 
                 openSet.Add(startNode);
                 startNode.currentVerticalAirTime = 0;
+                startNode.initialPossibleAirMovement = 0;
                 
                 while(openSet.Count > 0) {
                     Node currentNode = openSet.RemoveFirst();
@@ -58,6 +61,10 @@ namespace AStar {
                         }
                         else {
                             currentNode.currentVerticalAirTime = currentNode.parent.currentVerticalAirTime + 1;
+                        }
+
+                        if (currentNode.initialPossibleAirMovement <= amountOfImmediateAirMovementPossible) {
+                            currentNode.initialPossibleAirMovement = currentNode.parent.initialPossibleAirMovement + 1;
                         }
                     }
 
@@ -87,7 +94,12 @@ namespace AStar {
                         }
 
                         //Setting Node to not viable when it is using too much air time
-                        if (currentNode.currentVerticalAirTime == jumpHeight -1 && ((!neighbour.walkable && neighbour.isAir) && neighbour.gridY >= currentNode.gridY)) {//! Look into this condition and fix it
+                        if (currentNode.currentVerticalAirTime >= jumpHeight -1 && ((!neighbour.walkable && neighbour.isAir) && neighbour.gridY >= currentNode.gridY)) {//! Look into this condition and fix it
+                            continue;
+                        }
+
+                        // The path will now allow it to move any other way than straight down after it has used up all of its initial air movement
+                        if (currentNode.initialPossibleAirMovement > amountOfImmediateAirMovementPossible && ((Vector3.Distance(new Vector3(currentNode.gridX, 0, 0), new Vector3(neighbour.gridX, 0, 0)) > 0) || (Vector3.Distance(new Vector3(0, 0, currentNode.gridZ), new Vector3(0, 0, neighbour.gridZ)) > 0) || (neighbour.gridY > currentNode.gridY)) ) {
                             continue;
                         }
 

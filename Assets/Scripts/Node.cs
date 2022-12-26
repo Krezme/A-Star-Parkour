@@ -35,11 +35,12 @@ namespace AStar{
         //! HOWEVER BE AWARE OF HOW MULTIPLE AI WILL WORK as all will be using the same nodes
         // The current vertical air time used for moving the AI trough air nodes
         public int currentVerticalAirTime;
+
+        public int initialPossibleAirMovement;
         // The current slide length used for moving the AI trough low spaces
         public int currentSlideLength;
+
         // The index of the node in the heap
-
-
         int heapIndex;
 
         /// <summary>
