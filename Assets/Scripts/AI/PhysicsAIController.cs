@@ -60,9 +60,7 @@ public class PhysicsAIController : MonoBehaviour
 
     private float defCharacterControllerHeight;
     private Vector3 defCharacterControllerCenter;
-
-    public int[] test = new int[8];
-
+    
     private bool isSliding = false;
 
     private Dictionary<AnimationActions,Dictionary<int,bool>> animationActionsDictionary = new Dictionary<AnimationActions, Dictionary<int,bool>>() {
