@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
+using System;
 
 [System.Serializable]
 public class PhysicsStatistics {
@@ -56,12 +58,56 @@ public class PhysicsAIController : MonoBehaviour
     public float slidingCCHeight; // Character Controller height when sliding
     public Vector3 slidingCCCenter; // Character Controller center when sliding
 
-    private CharacterController defCharacterController;
+    private float defCharacterControllerHeight;
+    private Vector3 defCharacterControllerCenter;
+
+    public int[] test = new int[8];
 
     private bool isSliding = false;
 
+    private Dictionary<AnimationActions,Dictionary<int,bool>> animationActionsDictionary = new Dictionary<AnimationActions, Dictionary<int,bool>>() {
+        {AnimationActions.JumpGap, new Dictionary<int, bool> {
+            {0, false},
+            {1, false},
+            {2, false},
+            {3, false},
+            {4, false},
+            {5, false},
+            {7, false}
+        }},
+        {AnimationActions.ClimbHigh, new Dictionary<int, bool> {
+            {4, true},
+            {5, true}
+        }},
+        {AnimationActions.ClimbMed, new Dictionary<int, bool> {
+            {3, true},
+            {5, true}
+        }},
+        {AnimationActions.SlightJump, new Dictionary<int, bool> {
+            {0, true},
+            {1, true},
+            {5, true}
+        }},
+        {AnimationActions.Slide, new Dictionary<int, bool> {
+            {0, false},
+            {1, false},
+            {4, true}
+        }}
+    };
+
+    private IDictionary<AnimationActions, Action> animationActions;
+
     void Start () {
-        defCharacterController = controller;
+        defCharacterControllerHeight = controller.height;
+        defCharacterControllerCenter = controller.center;
+        Debug.Log(defCharacterControllerHeight);
+        animationActions = new Dictionary<AnimationActions, Action>() {
+            {AnimationActions.JumpGap, () => {JumpGap();}},
+            {AnimationActions.ClimbHigh, () => {ClimbHigh();}},
+            {AnimationActions.ClimbMed, () => {ClimbMed();}},
+            {AnimationActions.SlightJump, () => {SlightJump();}},
+            {AnimationActions.Slide, () => {StartSlide();}}
+        };
     }
 
     void Update () {
@@ -147,40 +193,87 @@ public class PhysicsAIController : MonoBehaviour
 
     public void PlayParkourAnimation() { //? If there is time use Dictionary to replace all of these if statements
         if (!isPlayingParkourAnimation) {
-            if (!checkRaycast[7].triggered && (!checkRaycast[0].triggered && !checkRaycast[1].triggered && !checkRaycast[2].triggered && !checkRaycast[3].triggered && !checkRaycast[4].triggered && !checkRaycast[5].triggered && !checkRaycast[6].triggered) && isGrounded) {
-                isPlayingParkourAnimation = true;
-                animator.SetBool("JumpGap", true);
-            }
-            else if (checkRaycast[4].triggered && checkRaycast[5].triggered && isGrounded) {
-                isPlayingParkourAnimation = true;
-                animator.SetBool("ClimbHigh", true);
-            }
-            else if (checkRaycast[3].triggered && checkRaycast[5].triggered && isGrounded) {
-                isPlayingParkourAnimation = true;
-                animator.SetBool("ClimbMed", true);
-            }
-            else if (checkRaycast[0].triggered && checkRaycast[1].triggered && checkRaycast[5].triggered && isGrounded) {
-                isPlayingParkourAnimation = true;
-                animator.SetBool("SlightJump", true);
-            }
-            else if (!checkRaycast[0].triggered && !checkRaycast[1].triggered && checkRaycast[4].triggered && isGrounded) {
-                isPlayingParkourAnimation = true;
-                controller.height = slidingCCHeight;
-                controller.center = slidingCCCenter;
-                isSliding = true;
-                animator.SetBool("Slide", true);
+            bool canActivate = true;
+            foreach (KeyValuePair<AnimationActions, Dictionary<int, bool>> dictionary in animationActionsDictionary) {
+                bool didBreak = false;
+                foreach (KeyValuePair<int, bool> condition in dictionary.Value) {
+                    if (checkRaycast[condition.Key].triggered != condition.Value) {
+                        didBreak = true;
+                        break;
+                    }
+                }
+                if (canActivate && !didBreak && isGrounded) {
+                    animationActions[dictionary.Key]();
+                    break;
+                }
             }
         }
 
-        if (isSliding) {
-            if (checkRaycast[6].triggered) {
-                animator.SetBool("Slide", false);
-            }
+        if (EndSlideCondition()) {
+            EndSlide();
         }
     }
 
+    /* bool JumpGapCondition() {
+        return (!checkRaycast[7].triggered && (!checkRaycast[0].triggered && !checkRaycast[1].triggered && !checkRaycast[2].triggered && !checkRaycast[3].triggered && !checkRaycast[4].triggered && !checkRaycast[5].triggered) && isGrounded);
+    }
+
+    bool ClimbHighCondition() {
+        return (checkRaycast[4].triggered && checkRaycast[5].triggered && isGrounded);
+    }
+
+    bool ClimbMedCondition() {
+        return (checkRaycast[3].triggered && checkRaycast[5].triggered && isGrounded);
+    }
+
+    bool SlightJumpCondition() {
+        return (checkRaycast[0].triggered && checkRaycast[1].triggered && checkRaycast[5].triggered && isGrounded);
+    }
+
+    bool StartSlideCondition() {
+        return (!checkRaycast[0].triggered && !checkRaycast[1].triggered && checkRaycast[4].triggered && isGrounded);
+    } */
+
+    bool EndSlideCondition() {
+        return (isSliding && checkRaycast[6].triggered);
+    }
+
+    void JumpGap() {
+        isPlayingParkourAnimation = true;
+        animator.SetBool("JumpGap", true);
+    }
+
+    void ClimbHigh() {
+        isPlayingParkourAnimation = true;
+        animator.SetBool("ClimbHigh", true);
+    }
+
+    void ClimbMed() {
+        isPlayingParkourAnimation = true;
+        animator.SetBool("ClimbMed", true);
+    }
+
+    void SlightJump () {
+        isPlayingParkourAnimation = true;
+        animator.SetBool("SlightJump", true);
+    }
+
+    void StartSlide() {
+        isPlayingParkourAnimation = true;
+        controller.height = slidingCCHeight;
+        controller.center = slidingCCCenter;
+        isSliding = true;
+        animator.SetBool("Slide", true);
+    }
+
+    void EndSlide() {
+        animator.SetBool("Slide", false);
+    }
+
+    // Resting the Character Controller to default
     public void ReturnCCToDefault() {
-        controller = defCharacterController;
+        controller.height = defCharacterControllerHeight;
+        controller.center = defCharacterControllerCenter;
         isSliding = false;
     }
 
@@ -213,4 +306,12 @@ public enum Directions {
     Left,
     Up,
     Down
+}
+
+public enum AnimationActions {
+    JumpGap,
+    ClimbHigh,
+    ClimbMed,
+    SlightJump,
+    Slide
 }
