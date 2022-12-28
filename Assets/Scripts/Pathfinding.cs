@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace AStar {
     public class Pathfinding : MonoBehaviour
@@ -29,7 +31,7 @@ namespace AStar {
 
         }
 
-        public void FindPath (PathRequest request, Action<PathResult> callback) {
+        public void FindPathAsync (PathRequest request, Action<PathResult> callback, CancellationTokenSource cts) {
             Vector3[] waypoints = new Vector3[0];
             bool pathSuccess = false;
 
@@ -47,6 +49,11 @@ namespace AStar {
                 while(openSet.Count > 0) {
                     Node currentNode = openSet.RemoveFirst();
                     closedSet.Add(currentNode);
+
+                    if (cts.IsCancellationRequested) {
+                        Debug.Log("Cancellation Token Requested");
+                        return;
+                    }
 
                     if (currentNode == targetNode) {
                         pathSuccess = true;
@@ -89,6 +96,11 @@ namespace AStar {
                     }
                     
                     foreach (Node neighbour in Grid.instance.GetNeighbours(currentNode)) {
+                        if (cts.IsCancellationRequested) {
+                            Debug.Log("Cancellation Token Requested");
+                            return;
+                        }
+
                         if ((!neighbour.walkable && !neighbour.isAir) || closedSet.Contains(neighbour)) {
                             continue;
                         }
@@ -131,6 +143,11 @@ namespace AStar {
             }
             else {
                 Debug.Log("Path not found!");
+            }
+
+            if (cts.IsCancellationRequested) {
+                Debug.Log("Cancellation Token Requested");
+                return;
             }
 
             callback(new PathResult(waypoints, pathSuccess, request.callback));

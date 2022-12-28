@@ -1,8 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-//using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace AStar{
     public class Grid : MonoBehaviour
@@ -78,6 +78,8 @@ namespace AStar{
         /// Generating the grid
         /// </summary>
         void CreateGrid() {
+            System.Diagnostics.Stopwatch st = new System.Diagnostics.Stopwatch();
+            st.Start();
             grid = new Node[gridSizeX, gridSizeY, gridSizeZ]; //create a new grid
             Vector3 worldBottomLeft = transform.position - (Vector3.right * gridWorldSize.x / 2) - (Vector3.forward * gridWorldSize.z / 2); //get the bottom left corner of the grid
             //loop through every node in the grid
@@ -131,10 +133,14 @@ namespace AStar{
                     }
                 }
             }
+            st.Stop();
+            Debug.Log("Grid Creation: " + st.ElapsedMilliseconds);
 
-
-
+            st = new System.Diagnostics.Stopwatch();
+            st.Start();
             BlurPenaltyMap(3); // Blurring the surrounding 3 nodes of the obstacles
+            st.Stop();
+            Debug.Log("Penalty Map Blur: " + st.ElapsedMilliseconds);
         }
 
         /// <summary>
@@ -236,16 +242,14 @@ namespace AStar{
             
             float percentX = (worldPosition.x + gridWorldSize.x / 2) / gridWorldSize.x;
             float percentY = gridWorldSize.y > 1 ? ((worldPosition.y - gridWorldSize.y / 2) + gridWorldSize.y / 2) / gridWorldSize.y : 1;
-            Debug.Log("worldPosition.y - gridWorldSize.y: " + (((worldPosition.y - gridWorldSize.y / 2) + gridWorldSize.y / 2) / gridWorldSize.y));
+            
             float percentZ = (worldPosition.z + gridWorldSize.z / 2) / gridWorldSize.z;
             percentX = Mathf.Clamp01(percentX);
             percentY = Mathf.Clamp01(percentY);
-            Debug.Log("percentY: " + (percentY));
             percentZ = Mathf.Clamp01(percentZ);
 
             int x = Mathf.RoundToInt((gridSizeX - 1) * percentX);
             int y = Mathf.RoundToInt((gridSizeY) * percentY);
-            Debug.Log("y: " + (y));
             int z = Mathf.RoundToInt((gridSizeZ - 1) * percentZ);
 
             return grid[x, y, z];
@@ -256,7 +260,7 @@ namespace AStar{
         /// </summary>
         void OnDrawGizmos() {
             Gizmos.DrawWireCube(transform.position + Vector3.up * (gridWorldSize.y / 2), new Vector3(gridWorldSize.x, gridWorldSize.y, gridWorldSize.z));
-            ThreadStart threadStart = delegate {
+            Task.Run( () => {
                 if (grid != null && displayGridGizmos) {
                     foreach (Node n in grid) {
 
@@ -273,13 +277,11 @@ namespace AStar{
                         Gizmos.color = Color.Lerp(Color.white, Color.black, Mathf.InverseLerp(penaltyMax, penaltyMin, n.movementPenalty));
                         if (n.walkable) {
                             Gizmos.color = (n.isOneUnitHeight) ? Color.green : Gizmos.color;
-                            Debug.Log("n.isOneUnitHeight" + n.isOneUnitHeight);
                             Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter - gizmosGridGap));
                         }
                     }
                 }
-            };
-            threadStart.Invoke();
+            });
         }
     	
 

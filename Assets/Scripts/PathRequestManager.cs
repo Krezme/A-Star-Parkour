@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace AStar {
     public class PathRequestManager : MonoBehaviour
@@ -23,6 +24,12 @@ namespace AStar {
             pathfinding = GetComponent<Pathfinding>();
         }
 
+        CancellationTokenSource cts;
+
+        void Start () {
+
+        }
+
         void Update () {
             if (results.Count > 0)
             {
@@ -38,12 +45,18 @@ namespace AStar {
             }
         }
 
-        public static void RequestPath(PathRequest request){
-            ThreadStart threadStart = delegate {
-                instance.pathfinding.FindPath(request, instance.FinishedProcessingPath);
-            };
-
-            threadStart.Invoke();
+        public static async void RequestPathAsync(PathRequest request){
+            if (instance.cts != null) {
+                instance.cts.Cancel();
+            }
+            instance.cts = new CancellationTokenSource();
+            await Task.Run(() => {
+                System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+                sw.Start();
+                instance.pathfinding.FindPathAsync(request, instance.FinishedProcessingPath, instance.cts);
+                sw.Stop();
+                Debug.Log("Path found in: " + sw.ElapsedMilliseconds + " ms");
+            }, instance.cts.Token);
         }
 
         public void FinishedProcessingPath(PathResult result) {
