@@ -1,6 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Threading;
+using System.Threading.Tasks;
+using Krezme;
 
 namespace AStar {
     public class Unit : MonoBehaviour
@@ -16,7 +19,11 @@ namespace AStar {
 
         public bool displayPathGizmos = true;
 
+        Node[,,] personalGrid;
+
         Path path;
+
+        CancellationTokenSource cts;
 
         void Start() {
             StartCoroutine(UpdatePath());
@@ -35,11 +42,18 @@ namespace AStar {
         /// Updates the path if the target pos has changed
         /// </summary>
         IEnumerator UpdatePath() {
-
+            personalGrid = Grid.instance.grid.Clone() as Node[,,];
+            if (personalGrid == Grid.instance.grid) {
+                Debug.Log("Cloning failed");
+            }
             if (Time.timeSinceLevelLoad < .3f) {
                 yield return new WaitForSeconds(.3f);
             }
-            PathRequestManager.RequestPathAsync(new PathRequest (transform.position, target.position, OnPathFound));
+            if (cts != null) {
+                cts.Cancel();
+            }
+            cts = new CancellationTokenSource();
+            PathRequestManager.RequestPathAsync(new PathRequest (transform.position, target.position, OnPathFound), cts, personalGrid);
 
             float sqrMoveThreshold = pathUpdateMoveThreshold * pathUpdateMoveThreshold;
             Vector3 targetPosOld = target.position;
@@ -48,7 +62,11 @@ namespace AStar {
                 yield return new WaitForSeconds(minPathUpdateTime);
                 if ((target.position - targetPosOld).sqrMagnitude > sqrMoveThreshold)
                 {
-                    PathRequestManager.RequestPathAsync(new PathRequest(transform.position, target.position, OnPathFound));
+                    if (cts != null) {
+                        cts.Cancel();
+                    }
+                    cts = new CancellationTokenSource();
+                    PathRequestManager.RequestPathAsync(new PathRequest(transform.position, target.position, OnPathFound), cts, personalGrid);
                     targetPosOld = target.position;
                 }
             }
@@ -97,6 +115,12 @@ namespace AStar {
             }
             if (!followingPath) {
                 animator.SetFloat("Speed", 0);
+            }
+        }
+
+        void OnDisable() {
+            if (cts != null) {
+                cts.Cancel();
             }
         }
 

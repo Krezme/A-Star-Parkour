@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace AStar {
     public class Pathfinding : MonoBehaviour
@@ -15,28 +16,24 @@ namespace AStar {
         public int amountOfImmediateAirMovementPossible;
         public int slideLength;
 
-        Grid grid;
-
         void Awake() {
             if (instance != null) {
                 Debug.LogError("More than one Pathfinding in scene!");
             }else {
                 instance = this;
             }
-
-            grid = GetComponent<Grid>();
         }
 
         void Update () {
 
         }
 
-        public void FindPathAsync (PathRequest request, Action<PathResult> callback, CancellationTokenSource cts) {
+        public void FindPathAsync (PathRequest request, Action<PathResult> callback, CancellationTokenSource cts, Node[,,] personalGrid) {
             Vector3[] waypoints = new Vector3[0];
             bool pathSuccess = false;
 
-            Node startNode = Grid.instance.NodeFromWorldPoint(request.pathStart);
-            Node targetNode = Grid.instance.NodeFromWorldPoint(request.pathEnd);
+            Node startNode = Grid.instance.NodeFromWorldPoint(request.pathStart, personalGrid);
+            Node targetNode = Grid.instance.NodeFromWorldPoint(request.pathEnd, personalGrid);
 
             if (startNode.walkable && targetNode.walkable) {
                 Heap<Node> openSet = new Heap<Node>(Grid.instance.MaxSize);
@@ -49,7 +46,6 @@ namespace AStar {
                 while(openSet.Count > 0) {
                     Node currentNode = openSet.RemoveFirst();
                     closedSet.Add(currentNode);
-
                     if (cts.IsCancellationRequested) {
                         Debug.Log("Cancellation Token Requested");
                         return;
@@ -57,7 +53,7 @@ namespace AStar {
 
                     if (currentNode == targetNode) {
                         pathSuccess = true;
-                        
+                        Debug.Log("break");
                         break;
                     }
 
@@ -95,7 +91,7 @@ namespace AStar {
                         }
                     }
                     
-                    foreach (Node neighbour in Grid.instance.GetNeighbours(currentNode)) {
+                    foreach (Node neighbour in Grid.instance.GetNeighbours(currentNode, personalGrid)) {
                         if (cts.IsCancellationRequested) {
                             Debug.Log("Cancellation Token Requested");
                             return;
@@ -127,17 +123,19 @@ namespace AStar {
                             neighbour.parent = currentNode;
 
                             if (!openSet.Contains(neighbour)) {
+                                
                                 openSet.Add(neighbour);
                             }
                         }
                     }
                 }
+                Debug.Log("!!!");
             }
             else {
                 Debug.Log("Start or End node is not walkable!: " + startNode.walkable + " " + targetNode.walkable);
             }
-
             if (pathSuccess) {
+                Debug.Log("RetracePath");
                 waypoints = RetracePath(startNode, targetNode);
                 pathSuccess = waypoints.Length > 0;
             }

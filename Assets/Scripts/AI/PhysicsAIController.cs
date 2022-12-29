@@ -49,7 +49,7 @@ public class PhysicsAIController : MonoBehaviour
     [HideInInspector]
     public bool jump;
     [HideInInspector]
-    public bool isGrounded;
+    public bool isGrounded = true;
     [HideInInspector]
     public bool isPlayingParkourAnimation = false;
 
@@ -98,7 +98,6 @@ public class PhysicsAIController : MonoBehaviour
     void Start () {
         defCharacterControllerHeight = controller.height;
         defCharacterControllerCenter = controller.center;
-        Debug.Log(defCharacterControllerHeight);
         animationActions = new Dictionary<AnimationActions, Action>() {
             {AnimationActions.JumpGap, () => {JumpGap();}},
             {AnimationActions.ClimbHigh, () => {ClimbHigh();}},
@@ -148,10 +147,13 @@ public class PhysicsAIController : MonoBehaviour
         return _jump;
     }
 
+    private bool isGroundedLastFrame = true;
+
     public void GroundedCheck()
     {
         // set sphere position, with offset
         Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - groundedOffset, transform.position.z);
+        isGroundedLastFrame = isGrounded;
         isGrounded = Physics.CheckSphere(spherePosition, groundCheckSphereRadius, groundMask, QueryTriggerInteraction.Ignore);
     }
 
@@ -207,30 +209,17 @@ public class PhysicsAIController : MonoBehaviour
             }
         }
 
+        if (!isPlayingParkourAnimation && !isGrounded) {
+            animator.SetBool("IsGrounded", false);
+        }
+        if (!isGroundedLastFrame && isGrounded && !isPlayingParkourAnimation) {
+            animator.SetBool("IsGrounded", true);
+        }
+
         if (EndSlideCondition()) {
             EndSlide();
         }
     }
-
-    /* bool JumpGapCondition() {
-        return (!checkRaycast[7].triggered && (!checkRaycast[0].triggered && !checkRaycast[1].triggered && !checkRaycast[2].triggered && !checkRaycast[3].triggered && !checkRaycast[4].triggered && !checkRaycast[5].triggered) && isGrounded);
-    }
-
-    bool ClimbHighCondition() {
-        return (checkRaycast[4].triggered && checkRaycast[5].triggered && isGrounded);
-    }
-
-    bool ClimbMedCondition() {
-        return (checkRaycast[3].triggered && checkRaycast[5].triggered && isGrounded);
-    }
-
-    bool SlightJumpCondition() {
-        return (checkRaycast[0].triggered && checkRaycast[1].triggered && checkRaycast[5].triggered && isGrounded);
-    }
-
-    bool StartSlideCondition() {
-        return (!checkRaycast[0].triggered && !checkRaycast[1].triggered && checkRaycast[4].triggered && isGrounded);
-    } */
 
     bool EndSlideCondition() {
         return (isSliding && checkRaycast[6].triggered);

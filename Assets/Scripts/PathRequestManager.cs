@@ -24,8 +24,6 @@ namespace AStar {
             pathfinding = GetComponent<Pathfinding>();
         }
 
-        CancellationTokenSource cts;
-
         void Start () {
 
         }
@@ -45,18 +43,15 @@ namespace AStar {
             }
         }
 
-        public static async void RequestPathAsync(PathRequest request){
-            if (instance.cts != null) {
-                instance.cts.Cancel();
-            }
-            instance.cts = new CancellationTokenSource();
+        public static async void RequestPathAsync(PathRequest request, CancellationTokenSource cts, Node[,,] grid) {
+            Debug.Log("Requesting Path");
             await Task.Run(() => {
                 System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
                 sw.Start();
-                instance.pathfinding.FindPathAsync(request, instance.FinishedProcessingPath, instance.cts);
+                instance.pathfinding.FindPathAsync(request, instance.FinishedProcessingPath, cts, grid);
                 sw.Stop();
                 Debug.Log("Path found in: " + sw.ElapsedMilliseconds + " ms");
-            }, instance.cts.Token);
+            }, cts.Token);
         }
 
         public void FinishedProcessingPath(PathResult result) {

@@ -36,4 +36,8 @@ public class AIAnimationEvents : MonoBehaviour
         animator.SetBool("JumpGap", false);
         physicsAIController.isPlayingParkourAnimation = false;
     }
+
+    public void EndFalling() {
+        physicsAIController.isPlayingParkourAnimation = false;
+    }
 }

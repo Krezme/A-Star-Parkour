@@ -52,7 +52,8 @@ namespace AStar{
         // Dictionary of all walkable layers and their movement penalty
         Dictionary<int, int> walkableRegionsDictionary = new Dictionary<int, int>();
         // An array of all the nodes in the grid
-        Node[,,] grid;
+        [HideInInspector]
+        public Node[,,] grid;
 
         // The diameter of the nodes in world units
         float nodeDiameter;
@@ -209,7 +210,7 @@ namespace AStar{
         /// </summary>
         /// <param name="node"> Which node's neighbors </param>
         /// <returns> All of the surrounding nodes in a list form </returns>
-        public List<Node> GetNeighbours(Node node) {
+        public List<Node> GetNeighbours(Node node, Node[,,] _Grid) {
             List<Node> neighbours = new List<Node>();
 
             for (int y = -1; y <= 1; y++) {
@@ -224,7 +225,7 @@ namespace AStar{
                         int checkZ = node.gridZ + z;
 
                         if (checkX >= 0 && checkX < gridSizeX && checkY >= 0 && checkY < gridSizeY && checkZ >= 0 && checkZ < gridSizeZ) {
-                            neighbours.Add(grid[checkX, checkY, checkZ]);
+                            neighbours.Add(_Grid[checkX, checkY, checkZ]);
                         }
                     }
                 }
@@ -238,7 +239,7 @@ namespace AStar{
         /// </summary>
         /// <param name="worldPosition"> World position coordinates </param>
         /// <returns>The specific node that covers that world space position</returns>
-        public Node NodeFromWorldPoint (Vector3 worldPosition) {
+        public Node NodeFromWorldPoint (Vector3 worldPosition, Node[,,] _Grid) {
             
             float percentX = (worldPosition.x + gridWorldSize.x / 2) / gridWorldSize.x;
             float percentY = gridWorldSize.y > 1 ? ((worldPosition.y - gridWorldSize.y / 2) + gridWorldSize.y / 2) / gridWorldSize.y : 1;
@@ -252,7 +253,7 @@ namespace AStar{
             int y = Mathf.RoundToInt((gridSizeY) * percentY);
             int z = Mathf.RoundToInt((gridSizeZ - 1) * percentZ);
 
-            return grid[x, y, z];
+            return _Grid[x, y, z];
         }
 
         /// <summary>
@@ -260,7 +261,7 @@ namespace AStar{
         /// </summary>
         void OnDrawGizmos() {
             Gizmos.DrawWireCube(transform.position + Vector3.up * (gridWorldSize.y / 2), new Vector3(gridWorldSize.x, gridWorldSize.y, gridWorldSize.z));
-            Task.Run( () => {
+            ThreadStart threadStart = delegate {
                 if (grid != null && displayGridGizmos) {
                     foreach (Node n in grid) {
 
@@ -281,7 +282,8 @@ namespace AStar{
                         }
                     }
                 }
-            });
+            };
+            threadStart.Invoke();
         }
     	
 
