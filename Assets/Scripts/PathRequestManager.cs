@@ -12,8 +12,6 @@ namespace AStar {
         public static PathRequestManager instance;
         Pathfinding pathfinding;
 
-        Queue<Task> tasks = new Queue<Task>();
-
         void Awake()
         {
             if(instance != null)
@@ -30,8 +28,6 @@ namespace AStar {
 
         }
 
-        private Task currentTask;
-
         void Update () {
             if (results.Count > 0)
             {
@@ -45,32 +41,18 @@ namespace AStar {
                     }
                 }
             }
-
-            if (tasks.Count > 0 && (currentTask == null || currentTask.IsCompleted)) {
-                currentTask = tasks.Dequeue();
-                currentTask.Start();
-            }
         }
 
         public static void RequestPathAsync(PathRequest request, CancellationTokenSource cts, Node[,,] grid) {
             Debug.Log("Requesting Path");
 
-            instance.tasks.Enqueue(new Task(() => {
+            new Task(() => {
                 System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
                 sw.Start();
                 instance.pathfinding.FindPathAsync(request, instance.FinishedProcessingPath, cts, grid);
                 sw.Stop();
                 Debug.Log("Path found in: " + sw.ElapsedMilliseconds + " ms");
-            }, cts.Token));
-
-
-            /* await Task.Run(() => {
-                System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
-                sw.Start();
-                instance.pathfinding.FindPathAsync(request, instance.FinishedProcessingPath, cts, grid);
-                sw.Stop();
-                Debug.Log("Path found in: " + sw.ElapsedMilliseconds + " ms");
-            }, cts.Token); */
+            }, cts.Token).RunSynchronously();
         }
 
         public void FinishedProcessingPath(PathResult result) {
