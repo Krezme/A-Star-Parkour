@@ -17,6 +17,10 @@ namespace AStar {
 
         public Animator animator;
 
+        public int requiredTooFarCountersForNewPath = 10;
+
+        public int distanceFromNextPointForNewPath = 2;
+
         public bool displayPathGizmos = true;
 
         Node[,,] personalGrid;
@@ -24,6 +28,10 @@ namespace AStar {
         Path path;
 
         CancellationTokenSource cts;
+
+        int currentPointIndex = 0;
+
+        int tooFarCounter = 0;
 
         void Start() {
             StartCoroutine(UpdatePath());
@@ -60,8 +68,15 @@ namespace AStar {
 
             while (true){
                 yield return new WaitForSeconds(minPathUpdateTime);
-                if ((target.position - targetPosOld).sqrMagnitude > sqrMoveThreshold)
+                if (path.turnBoundaries[currentPointIndex].DistanceFromPoint(new Vector3(transform.position.x, transform.position.y, transform.position.z)) > distanceFromNextPointForNewPath && physicsAIController.isGrounded) {
+                    tooFarCounter++;
+                }
+                else {
+                    tooFarCounter = 0;
+                }
+                if ((target.position - targetPosOld).sqrMagnitude > sqrMoveThreshold || tooFarCounter >= requiredTooFarCountersForNewPath)
                 {
+                    tooFarCounter = 0;
                     if (cts != null) {
                         cts.Cancel();
                     }
@@ -90,6 +105,7 @@ namespace AStar {
                     }
                     else {
                         pathIndex++;
+                        currentPointIndex = pathIndex;
                     }
                 }
 
@@ -102,7 +118,6 @@ namespace AStar {
                             followingPath = false;
                         }
                     }
-
                     // Moves and Rotates the AI
                     physicsAIController.RotatePlayer(new Vector3((path.lookPoints[pathIndex] - transform.position).x, 0, (path.lookPoints[pathIndex] - transform.position).z));
                     //Debug.Log((Vector3.Distance(new Vector3 (0, path.lookPoints[pathIndex].y, 0), new Vector3 (0, transform.position.y, 0)) >= physicsAIController.jumpThreshold) + " jeje") ;
