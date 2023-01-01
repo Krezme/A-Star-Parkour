@@ -84,23 +84,8 @@ The differently coloured nodes are colour coded:
     <p> Slidable</p>
 </div> -->
 
-![](https://placehold.co/30x30/red/red.png) 
+![](./ReadMeImages/colourCoded.png) 
 
-Obstacle
-
-![](https://placehold.co/30x30/cyan/cyan.png) 
-
-Air Nodes (Empty)
-
-![](https://placehold.co/30x30/white/white.png) ![](https://placehold.co/30x30/gray/gray.png) ![](https://placehold.co/30x30/black/black.png)
-
-Terrain Difficulty: Easy > Hard (Gradient)
-
-![](https://placehold.co/30x30/lime/lime.png) 
-
-Slidable 
-
-#### **Path**
 
 To be able to inspect the calculated path from the Seeker to the Target:
 - Navigate to the Hierarchy > Select the desired "Seeker" Game Object > Unit (C# Script Component)
