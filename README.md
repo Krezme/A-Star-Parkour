@@ -111,5 +111,37 @@ This will show the path for that Seeker. This can be done for as many seekers as
 The path will be drawn in Black Squares.
 The also will be blue perpendicular lines that represent the turning boundaries for each node.
 
+### **How to create new Scene**
 
+To make a new scene and test out everything in the project from the beginning:
 
+- Make a new scene
+- Navigate to Prefabs > EASY SETUP - UNPACK ME.prefab
+- Drag the prefab in the project
+- Unpack the prefab and remove all children from it
+  
+To Create terrain the ProBuilder package can be used.
+
+For the best result please make sure that the nodes are fully positioned on the surface. This is not required but the navigation will not be perfect.
+
+**Important: Make sure any Mesh Colliders are set to Convex**
+
+## **Not Easily Customizable**
+
+Most of the variables that can be changed in the inspector are can be changed to affect the parthfinding without making the traversing impossible. But there are few things about the project that cannot be fully customized yet.
+
+Things that are connected to the root motion animations are not changeable:
+- Jump height (Game Manager > Pathfinding (C# Script Component) > Jump height)
+- Jump height (Seeker > Physics AI Controller (C# Script Component) > Stats > Jump Height)
+- Check Raycast (Seeker > Physics AI Controller (C# Script Component) > Check Raycast)
+- Sliding CC Height (Seeker > Physics AI Controller (C# Script Component) > Sliding CC Height)
+- Sliding CC Center (Seeker > Physics AI Controller (C# Script Component) > Sliding CC Center)
+- Not recommended to change anything on the Character Controller
+
+All of these things were not a priority for this project as the aim was to bring the project as close to game ready as possible, rather than fully customizable in engine.
+
+Project Made by:
+
+Georgi Aleksandrov
+
+3rd year university student at Falmouth University (2022 / 2023)
