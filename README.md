@@ -51,32 +51,54 @@ Display Only Ground Gizmos does exactly what the name suggests. It only draws th
 
 The differently coloured nodes are colour coded:
 
-<div style="display: flex; gap: 1rem; align-items: center;">
+<!-- <div style="display: flex; gap: 1rem; align-items: center;">
     <div style="display: flex; gap: 1rem;">
-        <div style="width: 2rem; height: 2rem; background: red; border-radius: 15%; margin-left: 1rem; margin-bottom: 1rem;"></div>
+        <div style="width: 2rem; height: 2rem; background: red; border-radius: 15%; margin-left: 1rem; margin-bottom: 1rem;">
+        </div>
     </div>
     <p> Obstacle</p>
 </div>
 <div style="display: flex; gap: 1rem; align-items: center;">
     <div style="display: flex; gap: 1rem;">
-        <div style="width: 2rem; height: 2rem; background: cyan; border-radius: 15%; margin-left: 1rem; margin-bottom: 1rem;"></div>
+        <div style="width: 2rem; height: 2rem; background: cyan; border-radius: 15%; margin-left: 1rem; margin-bottom: 1rem;">
+        </div>
         </div>
     <p> Air Nodes (Empty)</p>
 </div>
 <div style="display: flex; gap: 1rem; align-items: center;">
     <div style="display: flex; gap: 1rem;">
-        <div style="width: 2rem; height: 2rem; background: white; border-radius: 15%; margin-left: 1rem; margin-bottom: 1rem;"></div>
-        <div style="width: 2rem; height: 2rem; background: gray; border-radius: 15%; margin-bottom: 1rem;"></div> 
-        <div style="width: 2rem; height: 2rem; background: black; border-radius: 15%; margin-bottom: 1rem;"></div>
+        <div style="width: 2rem; height: 2rem; background: white; border-radius: 15%; margin-left: 1rem; margin-bottom: 1rem;">
+        </div>
+        <div style="width: 2rem; height: 2rem; background: gray; border-radius: 15%; margin-bottom: 1rem;">
+        </div> 
+        <div style="width: 2rem; height: 2rem; background: black; border-radius: 15%; margin-bottom: 1rem;">
+        </div>
     </div> 
     <p> Terrain Difficulty: Easy > Hard (Gradient)</p>
 </div>
 <div style="display: flex; gap: 1rem; align-items: center;">
     <div style="display: flex; gap: 1rem;">
-        <div style="width: 2rem; height: 2rem; background: lime; border-radius: 15%; margin-left: 1rem; margin-bottom: 1rem;"></div>
+        <div style="width: 2rem; height: 2rem; background: lime; border-radius: 15%; margin-left: 1rem; margin-bottom: 1rem;">
+        </div>
     </div>
     <p> Slidable</p>
-</div>
+</div> -->
+
+![](https://placehold.co/30x30/red/red.png) 
+
+Obstacle
+
+![](https://placehold.co/30x30/cyan/cyan.png) 
+
+Air Nodes (Empty)
+
+![](https://placehold.co/30x30/white/white.png) ![](https://placehold.co/30x30/gray/gray.png) ![](https://placehold.co/30x30/black/black.png)
+
+Terrain Difficulty: Easy > Hard (Gradient)
+
+![](https://placehold.co/30x30/lime/lime.png) 
+
+Slidable 
 
 #### **Path**
 
@@ -88,4 +110,6 @@ This will show the path for that Seeker. This can be done for as many seekers as
 
 The path will be drawn in Black Squares.
 The also will be blue perpendicular lines that represent the turning boundaries for each node.
+
+
 
