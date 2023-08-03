@@ -155,12 +155,12 @@ namespace AStar {
 
         int GetDistance(Node nodeA, Node nodeB) {
             int dstX = Mathf.Abs(nodeA.gridX - nodeB.gridX);
-            int dstY = Mathf.Abs(nodeA.gridZ - nodeB.gridZ);
+            int dstZ = Mathf.Abs(nodeA.gridZ - nodeB.gridZ);
 
-            if (dstX > dstY) {
-                return 14 * dstY + 10 * (dstX - dstY);
+            if (dstX > dstZ) {
+                return 14 * dstZ + 10 * (dstX - dstZ);
             }
-            return 14 * dstX + 10 * (dstY - dstX);
+            return 14 * dstX + 10 * (dstZ - dstX);
         }
 
         Vector3[] RetracePath(Node startNode, Node endNode) {
